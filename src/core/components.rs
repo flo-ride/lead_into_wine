@@ -10,9 +10,6 @@ pub struct LoadingScreen;
 pub struct LoadingText;
 
 #[derive(Component)]
-pub struct PauseOverlay;
-
-#[derive(Component)]
 pub struct StartScreen;
 
 #[derive(Component)]
