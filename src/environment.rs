@@ -25,8 +25,14 @@ fn setup_environment(
 
     // Background Tavern Image
     commands.spawn((
-        Sprite::from_image(asset_server.load("textures/tavern.png")),
+        Sprite::from_image(asset_server.load("textures/background/tavern.png")),
         Transform::from_translation(Vec3::new(0.0, 0.0, -10.0)),
+    ));
+
+    // Foreground Tavern Image (assuming it should be spawned)
+    commands.spawn((
+        Sprite::from_image(asset_server.load("textures/foreground/tavern.png")),
+        Transform::from_translation(Vec3::new(0.0, 0.0, 10.0)), // Higher Z to appear in front
     ));
 
     // Invisible Counter (Tavern)
@@ -54,12 +60,12 @@ fn setup_environment(
     let bottle_entity = commands
         .spawn((
             AseAnimation {
-                aseprite: asset_server.load("textures/Bottle Glouglou.aseprite"),
+                aseprite: asset_server.load("textures/bottle/bottle_glouglou.aseprite"),
                 animation: Animation::default(),
             },
             Transform {
                 translation: Vec3::new(0.0, -150.0, 2.0),
-                scale: Vec3::splat(3.0),
+                scale: Vec3::splat(2.5),
                 ..default()
             },
             Sprite::default(),
@@ -95,7 +101,7 @@ fn setup_environment(
 
     // Background Alchemy Image
     commands.spawn((
-        Sprite::from_image(asset_server.load("textures/alchemy.png")),
+        Sprite::from_image(asset_server.load("textures/background/alchemy.png")),
         Transform::from_translation(Vec3::new(5000.0, 0.0, -10.0)),
     ));
 
@@ -124,7 +130,7 @@ fn setup_environment(
     let bottle_1 = commands
         .spawn((
             Sprite {
-                image: asset_server.load("textures/bottle_1.png"),
+                image: asset_server.load("textures/bottle/bottle_1.png"),
                 custom_size: Some(Vec2::new(80.0, 180.0)),
                 ..default()
             },
@@ -159,7 +165,7 @@ fn setup_environment(
     let bottle_2 = commands
         .spawn((
             Sprite {
-                image: asset_server.load("textures/bottle_2.png"),
+                image: asset_server.load("textures/bottle/bottle_2.png"),
                 custom_size: Some(Vec2::new(80.0, 180.0)),
                 ..default()
             },
@@ -194,7 +200,7 @@ fn setup_environment(
     let bottle_3 = commands
         .spawn((
             Sprite {
-                image: asset_server.load("textures/bottle_3.png"),
+                image: asset_server.load("textures/bottle/bottle_3.png"),
                 custom_size: Some(Vec2::new(80.0, 180.0)),
                 ..default()
             },
