@@ -1,5 +1,4 @@
 use crate::alchemy::{LiquidContainer, LiquidVisual};
-use crate::core::states::GameState;
 use crate::interaction::Draggable;
 use avian2d::prelude::*;
 use bevy::prelude::*;

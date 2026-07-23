@@ -60,7 +60,7 @@ fn spawn_title(parent: &mut ChildSpawnerCommands, ui_font: &UiFont) {
                 TextColor(Color::srgb(0.95, 0.85, 0.65)),
             ));
             title.spawn((
-                Text::new("// TODO:"),
+                Text::new("Une aventure de comptoir"),
                 ui_font.text(22.0),
                 TextColor(TEXT_MUTED),
                 Node {
@@ -104,7 +104,7 @@ fn spawn_disclaimer(parent: &mut ChildSpawnerCommands, ui_font: &UiFont) {
 
 fn spawn_footer(parent: &mut ChildSpawnerCommands, ui_font: &UiFont) {
     parent.spawn((
-        Text::new("v0.1.0 — Echap for pause"),
+        Text::new("v0.1.0 — TODO CORP TEAM "),
         ui_font.text(14.0),
         TextColor(Color::srgba(0.55, 0.58, 0.68, 0.9)),
         Node {
