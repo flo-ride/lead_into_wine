@@ -3,15 +3,9 @@ use bevy::prelude::*;
 use rand::seq::IndexedRandom;
 use std::time::Duration;
 
-#[derive(Resource)]
-pub struct LevelTimer(pub Timer);
-
-#[derive(Resource, Clone)]
+#[derive(Resource, Default)]
 pub struct LevelDay {
     pub day: u32,
-    pub customer_count: usize,
-    pub day_duration: f32,
-    pub customer_delay: Duration,
 }
 
 #[derive(Resource)]
@@ -19,73 +13,72 @@ pub struct CurrentLevel {
     pub customer_list: Vec<String>,
     pub pnj_index: usize,
     pub customer_timer: Timer,
+    pub level_timer: Timer,
 }
 
-fn get_day_config(day: u32) -> LevelDay {
-    LevelDay {
-        day,
-        customer_count: 3 + (day as usize * 2),
-        day_duration: 120.0 + (day as f32 * 20.0),
-        customer_delay: Duration::from_secs(5u64.saturating_sub(day as u64 / 2).max(2)),
-    }
-}
-pub fn init_level_loop(mut commands: Commands, assets: Res<Assets<PersonnaConfig>>) {
+fn get_day_config(assets: Res<Assets<PersonnaConfig>>, day: u32) -> CurrentLevel {
+    let customer_count = 3 + (day as usize);
+    let customer_delay = 5u64.saturating_sub(day as u64 / 2).max(2);
+    let day_duration = Duration::from_secs(customer_delay * customer_count as u64);
+
     let config = assets
         .iter()
         .next()
         .map(|(_, c)| c)
         .expect("Config should be loaded");
-
     let names: Vec<String> = config.personas.keys().cloned().collect();
-
     let mut rng = rand::rng();
 
-    let level_day = get_day_config(0);
-
-    let customers = names
-        .sample(&mut rng, level_day.customer_count)
-        .cloned()
-        .collect();
-
-    commands.insert_resource(level_day.clone());
-
-    commands.insert_resource(LevelTimer(Timer::from_seconds(
-        level_day.day_duration,
-        TimerMode::Once,
-    )));
-
-    commands.insert_resource(CurrentLevel {
+    let customers = names.sample(&mut rng, customer_count).cloned().collect();
+    CurrentLevel {
         customer_list: customers,
         pnj_index: 0,
-        customer_timer: Timer::new(level_day.customer_delay, TimerMode::Once),
-    });
+        customer_timer: Timer::new(Duration::from_secs(customer_delay), TimerMode::Once),
+        level_timer: Timer::new(day_duration, TimerMode::Once),
+    }
+}
+
+pub fn init_level_loop(
+    mut commands: Commands,
+    assets: Res<Assets<PersonnaConfig>>,
+    level_day: Option<Res<LevelDay>>,
+) {
+    let day = level_day.map(|l| l.day).unwrap_or(1); // Start at level 1
+    let current_level = get_day_config(assets, day);
+
+    commands.insert_resource(LevelDay { day });
+    commands.insert_resource(current_level);
 }
 
 pub fn level_loop_system(
     time: Res<Time>,
-    mut level_state: ResMut<CurrentLevel>,
-    mut level_timer: ResMut<LevelTimer>,
-    _assets: Res<Assets<PersonnaConfig>>,
+    mut current_level: ResMut<CurrentLevel>,
+    assets: Res<Assets<PersonnaConfig>>,
+    mut level_day: ResMut<LevelDay>,
 ) {
-    level_timer.0.tick(time.delta());
+    current_level.level_timer.tick(time.delta());
 
-    if level_timer.0.is_finished() {
-        info!("Day is over!");
+    if current_level.level_timer.just_finished() {
+        info!("Day {} finished!", level_day.day);
+        level_day.day += 1;
+        *current_level = get_day_config(assets, level_day.day);
         return;
     }
 
-    if level_state.pnj_index < level_state.customer_list.len() {
-        level_state.customer_timer.tick(time.delta());
+    if current_level.level_timer.is_finished() {
+        return;
+    }
 
-        if level_state.customer_timer.just_finished() {
-            let pnj_name = &level_state.customer_list[level_state.pnj_index];
+    if current_level.pnj_index < current_level.customer_list.len() {
+        current_level.customer_timer.tick(time.delta());
+
+        if current_level.customer_timer.just_finished() {
+            let pnj_name = &current_level.customer_list[current_level.pnj_index];
             info!("Customer {} arrived!", pnj_name);
-            // Dummy drink choice
-            info!("Customer {} wants a gin_tonic", pnj_name);
 
-            level_state.pnj_index += 1;
-            if level_state.pnj_index < level_state.customer_list.len() {
-                level_state.customer_timer.reset();
+            current_level.pnj_index += 1;
+            if current_level.pnj_index < current_level.customer_list.len() {
+                current_level.customer_timer.reset();
             }
         }
     }

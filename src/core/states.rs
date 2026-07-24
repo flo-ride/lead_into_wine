@@ -1,5 +1,3 @@
-use std::default;
-
 use bevy::prelude::*;
 use bevy_asset_loader::loading_state::{LoadingState, LoadingStateAppExt};
 
@@ -20,13 +18,6 @@ pub enum InGameView {
     #[default]
     Customers, // View with the clients
     Alchemy, // View with the bottles and potion making
-}
-
-#[derive(States, Default, Debug, Clone, PartialEq, Eq, Hash)]
-pub enum LevelState {
-    #[default]
-    Day,
-    NextDay,
 }
 
 impl GameState {
