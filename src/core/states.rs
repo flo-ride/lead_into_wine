@@ -38,7 +38,7 @@ pub struct StatePlugin;
 
 impl Plugin for StatePlugin {
     fn build(&self, app: &mut App) {
-        app.insert_state(GameState::initial())
+        app.init_state::<GameState>()
             .add_sub_state::<InGameView>()
             .add_loading_state(
                 LoadingState::new(GameState::Loading).continue_to_state(GameState::initial()),
