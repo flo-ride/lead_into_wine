@@ -13,11 +13,12 @@ impl Plugin for PersonnaPlugin {
 
 #[allow(dead_code)]
 #[derive(Resource)]
-struct PersonnaHandle(Handle<PersonnaConfig>);
+pub struct PersonnaHandle(pub Handle<PersonnaConfig>);
 
 impl FromWorld for PersonnaHandle {
     fn from_world(world: &mut World) -> Self {
         let asset_server = world.resource::<AssetServer>();
+        info!("The personna file has been loaded");
         PersonnaHandle(asset_server.load("personna.ron"))
     }
 }

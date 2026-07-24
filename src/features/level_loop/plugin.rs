@@ -1,0 +1,43 @@
+use crate::core::states::GameState;
+use crate::features::level_loop::systems::*;
+use crate::features::personna::components::PersonnaConfig;
+use bevy::prelude::*;
+
+pub struct LevelLoopPlugin;
+
+impl Plugin for LevelLoopPlugin {
+    fn build(&self, app: &mut App) {
+        // Ajout de la ressource initiale pour éviter que le système `level_loop_system` ne panique
+        // si init_level_loop n'a pas encore été appelé.
+        // Ou mieux, on ajoute une condition sur le système `level_loop_system`
+        // pour ne s'exécuter que si la ressource LevelState existe.
+        app.add_systems(
+            Update,
+            init_level_loop
+                .run_if(in_state(GameState::Playing))
+                .run_if(asset_is_loaded)
+                .run_if(not(level_initialized)),
+        )
+        .add_systems(
+            Update,
+            level_loop_system
+                .run_if(in_state(GameState::Playing))
+                .run_if(level_initialized),
+        )
+        .insert_state(LevelState::initial());
+    }
+}
+
+fn asset_is_loaded(
+    assets: Res<Assets<PersonnaConfig>>,
+    handle: Option<Res<crate::features::personna::plugin::PersonnaHandle>>,
+) -> bool {
+    if let Some(h) = handle {
+        return assets.contains(&h.0);
+    }
+    false
+}
+
+fn level_initialized(level: Option<Res<LevelState>>) -> bool {
+    level.is_some()
+}
