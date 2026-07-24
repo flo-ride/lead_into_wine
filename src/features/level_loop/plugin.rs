@@ -23,8 +23,7 @@ impl Plugin for LevelLoopPlugin {
             level_loop_system
                 .run_if(in_state(GameState::Playing))
                 .run_if(level_initialized),
-        )
-        .insert_state(LevelState::initial());
+        );
     }
 }
 
@@ -38,6 +37,6 @@ fn asset_is_loaded(
     false
 }
 
-fn level_initialized(level: Option<Res<LevelState>>) -> bool {
+fn level_initialized(level: Option<Res<CurrentLevel>>) -> bool {
     level.is_some()
 }
