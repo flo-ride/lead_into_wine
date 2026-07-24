@@ -11,7 +11,7 @@ impl Plugin for PersonnaPlugin {
         app.add_plugins(RonAssetPlugin::<PersonnaConfig>::new(&["ron"]))
             .add_loading_state(
                 LoadingState::new(GameState::Loading)
-                    .continue_to_state(GameState::initial())
+                    .continue_to_state(GameState::initial()) // Corrige la transition
                     .load_collection::<PersonnaAssets>(),
             );
     }
