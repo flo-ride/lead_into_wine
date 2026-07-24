@@ -13,9 +13,7 @@ impl Plugin for PersonnaPlugin {
                 LoadingState::new(GameState::Loading)
                     .continue_to_state(GameState::initial()) // Corrige la transition
                     .load_collection::<PersonnaAssets>(),
-            )
-            // On exécute le print seulement pendant le jeu
-            .add_systems(Update, print_pnj_name.run_if(in_state(GameState::Playing)));
+            );
     }
 }
 
@@ -23,19 +21,4 @@ impl Plugin for PersonnaPlugin {
 pub struct PersonnaAssets {
     #[asset(path = "personna.ron")]
     pub personna: Handle<PersonnaConfig>,
-}
-
-fn print_pnj_name(
-    personna_assets: Option<Res<PersonnaAssets>>,
-    configs: Res<Assets<PersonnaConfig>>,
-) {
-    let Some(personna_assets) = personna_assets else {
-        println!("Pas d'assets");
-        return; // resource pas encore là, on skip cette frame
-    };
-    if let Some(config) = configs.get(&personna_assets.personna) {
-        for name in config.personas.keys() {
-            println!("Persona: {}", name);
-        }
-    }
 }

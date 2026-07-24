@@ -9,6 +9,7 @@ mod ui;
 mod views;
 
 use bevy_aseprite_ultra::AsepriteUltraPlugin;
+use features::level_loop::plugin::LevelLoopPlugin;
 use features::personna::plugin::PersonnaPlugin;
 
 pub fn main() {
@@ -41,6 +42,7 @@ pub fn main() {
         .add_plugins(interaction::InteractionPlugin)
         .add_plugins(alchemy::AlchemyPlugin)
         .add_systems(Startup, setup_camera)
+        .add_plugins(LevelLoopPlugin)
         .add_plugins(PersonnaPlugin)
         .add_plugins(ui::MenuPlugin)
         .add_plugins(views::ViewsPlugin)
