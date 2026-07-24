@@ -3,6 +3,7 @@ use bevy_asset_loader::prelude::*;
 
 #[derive(AssetCollection, Resource)]
 pub struct UiFont {
+    #[asset(path = "fonts/MedievalSharp-Regular.ttf")]
     pub medieval_sharp_font: Handle<Font>,
 }
 
