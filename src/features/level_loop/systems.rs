@@ -1,4 +1,8 @@
 use crate::features::personna::components::PersonnaConfig;
+use avian2d::{
+    collision::collider::Collider,
+    dynamics::rigid_body::{LockedAxes, RigidBody},
+};
 use bevy::prelude::*;
 use rand::seq::IndexedRandom;
 use std::time::Duration;
@@ -82,4 +86,39 @@ pub fn level_loop_system(
             }
         }
     }
+}
+
+pub fn spawn_pnj(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
+) {
+    let pnj_model = commands
+        .spawn((
+            Sprite {
+                image: asset_server.load("models/personna/knight.png"),
+                custom_size: Some(Vec2::new(80.0, 180.0)),
+                ..default()
+            },
+            Transform {
+                translation: Vec3::new(100.0, 100.0, 0.0),
+                scale: Vec3::splat(2.5),
+                ..default()
+            },
+            RigidBody::Dynamic,
+            LockedAxes::ROTATION_LOCKED,
+            Collider::rectangle(80.0, 180.0),
+        ))
+        .id();
+
+    let pnj_hitbox = commands
+        .spawn((
+            Mesh2d(meshes.add(Rectangle::new(60.0, 160.0))),
+            MeshMaterial2d(materials.add(Color::NONE)),
+            Transform::from_translation(Vec3::new(0.0, 0.0, -0.1)),
+        ))
+        .id();
+
+    commands.entity(pnj_model).add_child(pnj_hitbox);
 }
