@@ -55,7 +55,7 @@ fn spawn_title(parent: &mut ChildSpawnerCommands, ui_font: &UiFont) {
         })
         .with_children(|title| {
             title.spawn((
-                Text::new("THE THIRSTY SKELETON"),
+                Text::new("Lead Into Wine"),
                 ui_font.text(72.0),
                 TextColor(Color::srgb(0.95, 0.85, 0.65)),
             ));
