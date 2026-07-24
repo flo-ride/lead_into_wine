@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 pub struct RaceProfile {
     pub tolerance: f32,
     pub mood_bias: f32,
+    pub texture: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Reflect)]
@@ -17,6 +18,7 @@ pub struct Preference {
 #[derive(Debug, Clone, Serialize, Deserialize, Reflect)]
 pub struct Persona {
     pub race: String,
+    pub texture: Option<String>,
     pub greetings: Vec<String>,
     pub preferences: Vec<Preference>,
 }
