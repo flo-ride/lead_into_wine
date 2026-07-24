@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use bevy_asset_loader::loading_state::{LoadingState, LoadingStateAppExt};
 
 #[allow(dead_code)]
 #[derive(States, Default, Debug, Clone, PartialEq, Eq, Hash)]
@@ -28,7 +29,7 @@ impl GameState {
 
         #[cfg(not(feature = "dev"))]
         {
-            GameState::Loading
+            GameState::StartMenu
         }
     }
 }
@@ -38,6 +39,9 @@ pub struct StatePlugin;
 impl Plugin for StatePlugin {
     fn build(&self, app: &mut App) {
         app.insert_state(GameState::initial())
-            .add_sub_state::<InGameView>();
+            .add_sub_state::<InGameView>()
+            .add_loading_state(
+                LoadingState::new(GameState::Loading).continue_to_state(GameState::initial()),
+            );
     }
 }

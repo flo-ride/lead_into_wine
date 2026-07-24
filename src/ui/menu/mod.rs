@@ -13,12 +13,13 @@ use crate::ui::menu::screen::start::{
     despawn_start_screen, spawn_start_screen, update_start_menu_buttons,
 };
 use bevy::prelude::*;
+use bevy_asset_loader::prelude::*;
 
 pub struct MenuPlugin;
 
 impl Plugin for MenuPlugin {
     fn build(&self, app: &mut App) {
-        app.init_resource::<UiFont>()
+        app.init_collection::<UiFont>()
             .add_systems(OnEnter(GameState::Loading), spawn_loading_screen)
             .add_systems(OnExit(GameState::Loading), despawn_loading_screen)
             .add_systems(
