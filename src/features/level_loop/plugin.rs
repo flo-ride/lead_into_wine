@@ -23,7 +23,8 @@ impl Plugin for LevelLoopPlugin {
             level_loop_system
                 .run_if(in_state(GameState::Playing))
                 .run_if(level_initialized),
-        );
+        )
+        .add_systems(Startup, spawn_pnj);
     }
 }
 
