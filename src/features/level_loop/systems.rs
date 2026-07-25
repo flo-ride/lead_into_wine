@@ -2,10 +2,7 @@ use crate::core::components::Scroll;
 use crate::features::personna::components::*;
 use crate::features::recipes::components::RecipesConfig;
 use crate::{features::level_loop::components::*, ui::UiFont};
-use avian2d::{
-    collision::collider::Collider,
-    dynamics::rigid_body::{LinearVelocity, LockedAxes, RigidBody},
-};
+use avian2d::{collision::collider::Collider, dynamics::rigid_body::LinearVelocity};
 use bevy::{prelude::*, text::TextBounds};
 use bevy_aseprite_ultra::prelude::{Animation, AseAnimation};
 use rand::seq::{IndexedRandom, IteratorRandom};
