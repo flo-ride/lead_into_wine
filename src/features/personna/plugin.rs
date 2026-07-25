@@ -19,6 +19,7 @@ impl Plugin for PersonnaPlugin {
 
 #[derive(AssetCollection, Resource)]
 pub struct PersonnaAssets {
+    #[expect(dead_code)]
     #[asset(path = "personna.ron")]
     pub personna: Handle<PersonnaConfig>,
 }
