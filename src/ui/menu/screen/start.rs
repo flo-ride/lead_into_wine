@@ -34,7 +34,6 @@ pub fn spawn_start_screen(mut commands: Commands, ui_font: Res<UiFont>) {
         .with_children(|root| {
             spawn_title(root, &ui_font);
             spawn_button_column(root, &ui_font);
-            spawn_disclaimer(root, &ui_font);
             spawn_footer(root, &ui_font);
         });
 }
@@ -81,25 +80,8 @@ fn spawn_button_column(parent: &mut ChildSpawnerCommands, ui_font: &UiFont) {
         })
         .with_children(|column| {
             spawn_action_button(column, "Play", true, ui_font);
-            spawn_action_button(column, "Volume", false, ui_font);
-            spawn_action_button(column, "Settings", false, ui_font);
             spawn_action_button(column, "Credits", false, ui_font);
         });
-}
-
-fn spawn_disclaimer(parent: &mut ChildSpawnerCommands, ui_font: &UiFont) {
-    parent.spawn((
-        Text::new(
-            "Some assets are made with AI but it's temporary, they are only used for development.",
-        ),
-        ui_font.text(14.0),
-        TextColor(Color::srgba(0.8, 0.4, 0.4, 0.9)),
-        Node {
-            position_type: PositionType::Absolute,
-            bottom: Val::Px(50.0),
-            ..default()
-        },
-    ));
 }
 
 fn spawn_footer(parent: &mut ChildSpawnerCommands, ui_font: &UiFont) {
