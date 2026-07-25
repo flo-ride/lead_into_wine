@@ -1,4 +1,4 @@
-use crate::features::{personna::components::Persona, recipes::components::ResultTypes};
+use crate::features::personna::components::Persona;
 use bevy::prelude::*;
 
 #[derive(Resource, Default)]
