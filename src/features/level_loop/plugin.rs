@@ -1,4 +1,5 @@
 use crate::core::states::GameState;
+use crate::features::level_loop::components::*;
 use crate::features::level_loop::systems::*;
 use bevy::prelude::*;
 
@@ -10,19 +11,26 @@ impl Plugin for LevelLoopPlugin {
         // si init_level_loop n'a pas encore été appelé.
         // Ou mieux, on ajoute une condition sur le système `level_loop_system`
         // pour ne s'exécuter que si la ressource LevelState existe.
-        app.add_systems(
-            Update,
-            init_level_loop
-                .run_if(in_state(GameState::Playing))
-                .run_if(not(level_initialized)),
-        )
-        .add_systems(
-            Update,
-            level_loop_system
-                .run_if(in_state(GameState::Playing))
-                .run_if(level_initialized),
-        )
-        .add_systems(Startup, spawn_pnj);
+        app.add_message::<CustomerArrived>()
+            .add_message::<DayEnded>()
+            .add_systems(
+                Update,
+                init_level_loop
+                    .run_if(in_state(GameState::Playing))
+                    .run_if(not(level_initialized)),
+            )
+            .add_systems(
+                Update,
+                (
+                    level_loop_system,
+                    despawn_pnj,
+                    spawn_pnj,
+                    pnj_departure_system,
+                )
+                    .chain()
+                    .run_if(in_state(GameState::Playing))
+                    .run_if(level_initialized),
+            );
     }
 }
 

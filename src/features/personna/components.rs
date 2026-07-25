@@ -18,6 +18,7 @@ pub struct Preference {
 #[derive(Debug, Clone, Serialize, Deserialize, Reflect)]
 pub struct Persona {
     pub race: String,
+    pub name: String,
     pub texture: Option<String>,
     pub greetings: Vec<String>,
     pub preferences: Vec<Preference>,
@@ -27,5 +28,19 @@ pub struct Persona {
 pub struct PersonnaConfig {
     pub races: Vec<String>,
     pub race_profiles: std::collections::HashMap<String, RaceProfile>,
-    pub personas: std::collections::HashMap<String, Persona>,
+    pub personas: Vec<Persona>,
+}
+
+impl PersonnaConfig {
+    pub fn texture_for<'a>(&'a self, persona: &'a Persona) -> &'a str {
+        persona
+            .texture
+            .as_deref()
+            .or_else(|| {
+                self.race_profiles
+                    .get(&persona.race)
+                    .and_then(|race| race.texture.as_deref())
+            })
+            .unwrap_or("knight.png")
+    }
 }
