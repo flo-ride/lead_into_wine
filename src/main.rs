@@ -37,6 +37,7 @@ pub fn main() {
                 }),
         )
         .add_plugins(core::states::StatePlugin)
+        .add_plugins(core::assets::AssetPlugin)
         .add_plugins(physics::PhysicsPlugin)
         .add_plugins(interaction::InteractionPlugin)
         .add_plugins(alchemy::AlchemyPlugin)

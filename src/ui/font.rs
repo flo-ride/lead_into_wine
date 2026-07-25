@@ -1,21 +1,18 @@
 use bevy::prelude::*;
+use bevy_asset_loader::prelude::*;
 
-#[derive(Resource, Clone)]
-pub struct UiFont(pub Handle<Font>);
+#[derive(AssetCollection, Resource)]
+pub struct UiFont {
+    #[asset(path = "fonts/MedievalSharp-Regular.ttf")]
+    pub medieval_sharp_font: Handle<Font>,
+}
 
 impl UiFont {
     pub fn text(&self, size: f32) -> TextFont {
         TextFont {
-            font: bevy::prelude::FontSource::Handle(self.0.clone()),
+            font: bevy::prelude::FontSource::Handle(self.medieval_sharp_font.clone()),
             font_size: bevy::prelude::FontSize::Px(size),
             ..default()
         }
-    }
-}
-
-impl FromWorld for UiFont {
-    fn from_world(world: &mut World) -> Self {
-        let asset_server = world.resource::<AssetServer>();
-        Self(asset_server.load("fonts/MedievalSharp-Regular.ttf"))
     }
 }
