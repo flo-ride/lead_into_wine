@@ -1,4 +1,6 @@
 use crate::alchemy::{LiquidContainer, LiquidVisual};
+
+use crate::core::components::Scroll;
 use crate::interaction::Draggable;
 use avian2d::prelude::*;
 use bevy::prelude::*;
@@ -24,14 +26,30 @@ fn setup_environment(
 
     // Background Tavern Image
     commands.spawn((
-        Sprite::from_image(asset_server.load("textures/background/tavern.png")),
-        Transform::from_translation(Vec3::new(0.0, 0.0, -10.0)),
+        AseAnimation {
+            aseprite: asset_server.load("textures/background/front.ase"),
+            animation: Animation::default(),
+        },
+        Sprite::default(),
+        Transform {
+            translation: Vec3::new(0.0, 0.0, -10.0),
+            scale: Vec3::splat(2.0),
+            ..default()
+        },
     ));
 
-    // Foreground Tavern Image (assuming it should be spawned)
     commands.spawn((
-        Sprite::from_image(asset_server.load("textures/foreground/tavern.png")),
-        Transform::from_translation(Vec3::new(0.0, 0.0, 10.0)), // Higher Z to appear in front
+        Scroll,
+        AseAnimation {
+            aseprite: asset_server.load("models/scroll.aseprite"),
+            animation: Animation::default(),
+        },
+        Sprite::default(),
+        Transform {
+            translation: Vec3::new(-650.0, 220.0, -10.0),
+            scale: Vec3::splat(1.0),
+            ..default()
+        },
     ));
 
     // Invisible Counter (Tavern)

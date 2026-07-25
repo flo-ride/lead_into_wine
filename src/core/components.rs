@@ -24,6 +24,9 @@ pub struct BackgroundBlob {
 }
 
 #[derive(Component)]
+pub struct Scroll;
+
+#[derive(Component)]
 pub struct StartMenuButton {
     pub primary: bool,
 }

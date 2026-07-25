@@ -10,11 +10,11 @@
     // per-race tuning knobs consumed by the formula above:
     // tolerance divides the raw error before evaluation, mood_bias is added directly
     race_profiles: {
-        "orc": (texture: "orc.png", tolerance: 1.5, mood_bias: 0.1),
-        "elf": (texture: "elf.png", tolerance: 0.6, mood_bias: 0.0),
-        "dwarf": (texture: "dwarf.png", tolerance: 1.0, mood_bias: -0.05),
-        "human": (texture: "human.png", tolerance: 1.0, mood_bias: 0.0),
-        "wizard": (texture: "wizard.png", tolerance: 0.8, mood_bias: 0.0),
+        "orc": (texture: "orc.aseprite", tolerance: 1.5, mood_bias: 0.1),
+        // "elf": (texture: "warrior.aseprite", tolerance: 0.6, mood_bias: 0.0),
+        "goblin": (texture: "goblin.aseprite", tolerance: 1.0, mood_bias: -0.05),
+        "human": (texture: "warrior.aseprite", tolerance: 1.0, mood_bias: 0.0),
+        "wizard": (texture: "wizard.aseprite", tolerance: 0.8, mood_bias: 0.0),
     },
 
     // named personas as a map: name -> persona data
@@ -23,8 +23,7 @@
     personas: [
         (
             name: "bob",
-            race: "orc",
-            texture: "knight.png",
+            race: "human",
             greetings: [
                 "Hello there!",
                 "What's brewing, barkeep?",
@@ -41,25 +40,17 @@
         ),
         (
             name: "bobo",
-            race: "orc",
+            race: "goblin",
             greetings: [
                 "Bobo thirsty. Bobo wait.",
             ],
             preferences: [],
         ),
         (
-            name: "elowen",
-            race: "elf",
+            name: "bobie",
+            race: "wizard",
             greetings: [
-                "I expect precision, bartender.",
-            ],
-            preferences: [],
-        ),
-        (
-            name: "thrundir",
-            race: "dwarf",
-            greetings: [
-                "Make it strong or don't bother.",
+                "Bobie thirsty. Bobie wait.",
             ],
             preferences: [],
         ),
