@@ -6,12 +6,12 @@ mod features;
 mod interaction;
 mod physics;
 mod ui;
-mod views;
 
 use bevy_aseprite_ultra::AsepriteUltraPlugin;
 use features::level_loop::plugin::LevelLoopPlugin;
 use features::personna::plugin::PersonnaPlugin;
 use features::recipes::plugin::RecipesPlugin;
+use features::shelf::plugin::ShelfPlugin;
 
 pub fn main() {
     App::new()
@@ -47,7 +47,7 @@ pub fn main() {
         .add_plugins(PersonnaPlugin)
         .add_plugins(RecipesPlugin)
         .add_plugins(ui::MenuPlugin)
-        .add_plugins(views::ViewsPlugin)
+        .add_plugins(ShelfPlugin)
         .add_plugins(environment::EnvironmentPlugin)
         .add_plugins(AsepriteUltraPlugin)
         .run();
