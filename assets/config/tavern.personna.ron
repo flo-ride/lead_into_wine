@@ -45,9 +45,9 @@
             name: "Bobo",
             race: "goblin",
             greetings: [
-                "Bobo want {order}!",
-                "Bobo stomach getting angry.",
-                "Bobo not stealing... yet.",
+                "{name} want {order}!",
+                "{name} stomach getting angry.",
+                "{name} not stealing... yet.",
             ],
             preferences: [],
         ),
@@ -76,7 +76,7 @@
             race: "goblin",
             greetings: [
                 "Tiny goblin needs {order}.",
-                "Fizzik paying. Probably.",
+                "{name} paying. Probably.",
                 "No poison this time, please.",
             ],
             preferences: [],
