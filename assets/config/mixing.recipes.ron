@@ -1,0 +1,73 @@
+(
+    ingredients: [
+        "Wine",
+        "Beer",
+        "Cider",
+        "Brandy",
+        "Milk",
+        "Unicorn Tear",
+        "Fairy Wing Powder",
+        "Stardust",
+        "Mandrake Root",
+    ],
+
+    // Catalogue des types de resultats finaux (limite et reutilise par plusieurs
+    // combinaisons). 'stagnant_water' est le seul type qui represente un melange
+    // rate dans cette matrice.
+    result_types: {
+        "beer_butter": (name: "Biere au beurre", texture: ""),
+        "apple_wine": (name: "Apple Wine", texture: ""),
+        "strong_wine": (name: "Strong Wine", texture: ""),
+        "stagnant_water": (name: "Eau croupie", texture: ""),  // melange rate
+        "love_potion": (name: "Philtre d'Amour", texture: ""),
+        "invisibility_potion": (name: "Potion d'Invisibilite", texture: ""),
+        "luck_potion": (name: "Potion de Chance", texture: ""),
+        "strength_elixir": (name: "Elixir de Force", texture: ""),
+        "hopped_cider": (name: "Cidre Houblonne", texture: ""),
+        "strong_beer": (name: "Strong Beer", texture: ""),
+        "strong_apple": (name: "Strong Apple", texture: ""),
+        "healing_elixir": (name: "Elixir de Soin", texture: ""),
+        "sleep_potion": (name: "Potion de Sommeil", texture: ""),
+    },
+
+    // Recettes : chaque paire d'ingredients pointe vers un id de result_types.
+    // Une seule entree par paire (ordre alphabetique), A+B == B+A.
+    recipes: {
+        ("Wine", "Beer"): "beer_butter",
+        ("Wine", "Cider"): "apple_wine",
+        ("Wine", "Brandy"): "strong_wine",
+        ("Wine", "Milk"): "stagnant_water",
+        ("Wine", "Unicorn Tear"): "love_potion",
+        ("Wine", "Fairy Wing Powder"): "invisibility_potion",
+        ("Wine", "Stardust"): "luck_potion",
+        ("Wine", "Mandrake Root"): "strength_elixir",
+        ("Beer", "Cider"): "hopped_cider",
+        ("Beer", "Brandy"): "strong_beer",
+        ("Beer", "Milk"): "stagnant_water",
+        ("Beer", "Unicorn Tear"): "love_potion",
+        ("Beer", "Fairy Wing Powder"): "invisibility_potion",
+        ("Beer", "Stardust"): "luck_potion",
+        ("Beer", "Mandrake Root"): "strength_elixir",
+        ("Cider", "Brandy"): "strong_apple",
+        ("Cider", "Milk"): "stagnant_water",
+        ("Cider", "Unicorn Tear"): "love_potion",
+        ("Cider", "Fairy Wing Powder"): "invisibility_potion",
+        ("Cider", "Stardust"): "luck_potion",
+        ("Cider", "Mandrake Root"): "strength_elixir",
+        ("Brandy", "Milk"): "stagnant_water",
+        ("Brandy", "Unicorn Tear"): "love_potion",
+        ("Brandy", "Fairy Wing Powder"): "invisibility_potion",
+        ("Brandy", "Stardust"): "luck_potion",
+        ("Brandy", "Mandrake Root"): "strength_elixir",
+        ("Milk", "Unicorn Tear"): "love_potion",
+        ("Milk", "Fairy Wing Powder"): "invisibility_potion",
+        ("Milk", "Stardust"): "luck_potion",
+        ("Milk", "Mandrake Root"): "strength_elixir",
+        ("Unicorn Tear", "Fairy Wing Powder"): "healing_elixir",
+        ("Unicorn Tear", "Stardust"): "healing_elixir",
+        ("Unicorn Tear", "Mandrake Root"): "healing_elixir",
+        ("Fairy Wing Powder", "Stardust"): "sleep_potion",
+        ("Fairy Wing Powder", "Mandrake Root"): "sleep_potion",
+        ("Stardust", "Mandrake Root"): "sleep_potion",
+    },
+)
