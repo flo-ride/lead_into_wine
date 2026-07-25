@@ -13,8 +13,7 @@ impl Plugin for RecipesPlugin {
                 LoadingState::new(GameState::Loading)
                     .continue_to_state(GameState::initial()) // Corrige la transition
                     .load_collection::<RecipesAssets>(),
-            )
-            .add_systems(OnEnter(GameState::Playing), print_ingredients);
+            );
     }
 }
 
@@ -23,15 +22,4 @@ pub struct RecipesAssets {
     #[expect(dead_code)]
     #[asset(path = "config/mixing.recipes.ron")]
     pub recipes: Handle<RecipesConfig>,
-}
-
-pub fn print_ingredients(assets: Res<Assets<RecipesConfig>>) {
-    let config = assets
-        .iter()
-        .next()
-        .map(|(_, c)| c)
-        .expect("Config should be loaded");
-    for ingredient in config.ingredients.clone() {
-        info!("New ingredients {}", ingredient);
-    }
 }
