@@ -11,6 +11,7 @@ mod views;
 use bevy_aseprite_ultra::AsepriteUltraPlugin;
 use features::level_loop::plugin::LevelLoopPlugin;
 use features::personna::plugin::PersonnaPlugin;
+use features::recipes::plugin::RecipesPlugin;
 
 pub fn main() {
     App::new()
@@ -44,6 +45,7 @@ pub fn main() {
         .add_systems(Startup, setup_camera)
         .add_plugins(LevelLoopPlugin)
         .add_plugins(PersonnaPlugin)
+        .add_plugins(RecipesPlugin)
         .add_plugins(ui::MenuPlugin)
         .add_plugins(views::ViewsPlugin)
         .add_plugins(environment::EnvironmentPlugin)

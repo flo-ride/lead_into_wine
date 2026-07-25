@@ -8,7 +8,7 @@ pub struct PersonnaPlugin;
 
 impl Plugin for PersonnaPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugins(RonAssetPlugin::<PersonnaConfig>::new(&["ron"]))
+        app.add_plugins(RonAssetPlugin::<PersonnaConfig>::new(&["personna.ron"]))
             .add_loading_state(
                 LoadingState::new(GameState::Loading)
                     .continue_to_state(GameState::initial()) // Corrige la transition
@@ -20,6 +20,6 @@ impl Plugin for PersonnaPlugin {
 #[derive(AssetCollection, Resource)]
 pub struct PersonnaAssets {
     #[expect(dead_code)]
-    #[asset(path = "personna.ron")]
+    #[asset(path = "config/tavern.personna.ron")]
     pub personna: Handle<PersonnaConfig>,
 }
