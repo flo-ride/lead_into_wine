@@ -1,4 +1,4 @@
-use crate::features::personna::components::Persona;
+use crate::features::{personna::components::Persona, recipes::components::ResultTypes};
 use bevy::prelude::*;
 
 #[derive(Resource, Default)]
@@ -11,6 +11,7 @@ pub struct CurrentLevel {
     pub customer_list: Vec<Persona>,
     pub customer_timer: Timer,
     pub level_timer: Timer,
+    pub customer_order: String,
 }
 
 #[derive(Resource)]

@@ -22,35 +22,122 @@
     // (tolerance_bonus stacks on top of the race's base tolerance)
     personas: [
         (
-            name: "bob",
+            name: "Bob",
             race: "human",
             greetings: [
-                "Hello there!",
-                "What's brewing, barkeep?",
+                "Hello! I'd like {order}.",
+                "No rush... unless it's burning.",
+                "I've waited longer in tax lines.",
             ],
             preferences: [],
         ),
         (
-            name: "bobette",
+            name: "Bobette",
             race: "orc",
             greetings: [
-                "Evening! Surprise me.",
+                "Me want {order}. No funny business.",
+                "Orc patient... for now.",
+                "Food first. Smashing later.",
             ],
             preferences: [],
         ),
         (
-            name: "bobo",
+            name: "Bobo",
             race: "goblin",
             greetings: [
-                "Bobo thirsty. Bobo wait.",
+                "Bobo want {order}!",
+                "Bobo stomach getting angry.",
+                "Bobo not stealing... yet.",
             ],
             preferences: [],
         ),
         (
-            name: "bobie",
+            name: "Bobie",
             race: "wizard",
             greetings: [
-                "Bobie thirsty. Bobie wait.",
+                "{name} requires {order}.",
+                "{name} could conjure one... but where's the fun?",
+                "Magic takes effort too, you know.",
+            ],
+            preferences: [],
+        ),
+        (
+            name: "Throg",
+            race: "orc",
+            greetings: [
+                "Bring Throg {order}.",
+                "Throg counting to ten.",
+                "Throg forgot ten. Hurry anyway.",
+            ],
+            preferences: [],
+        ),
+        (
+            name: "Fizzik",
+            race: "goblin",
+            greetings: [
+                "Tiny goblin needs {order}.",
+                "Fizzik paying. Probably.",
+                "No poison this time, please.",
+            ],
+            preferences: [],
+        ),
+        (
+            name: "Eloria",
+            race: "elf",
+            greetings: [
+                "May I have {order}?",
+                "Patience is a virtue... mostly.",
+                "I've seen trees grow faster.",
+            ],
+            preferences: [],
+        ),
+        (
+            name: "Aelar",
+            race: "elf",
+            greetings: [
+                "A fine {order}, if you would.",
+                "Perfection takes time, I suppose.",
+                "I can hear my stomach composing poetry.",
+            ],
+            preferences: [],
+        ),
+        (
+            name: "Borin",
+            race: "dwarf",
+            greetings: [
+                "One {order}, nice and hearty!",
+                "If it's cold, I'm complaining.",
+                "Good things come to those who wait... with ale.",
+            ],
+            preferences: [],
+        ),
+        (
+            name: "Grum",
+            race: "dwarf",
+            greetings: [
+                "Make me {order}.",
+                "I've mined rocks softer than this wait.",
+                "I'll forgive you if it's delicious.",
+            ],
+            preferences: [],
+        ),
+        (
+            name: "Merl",
+            race: "wizard",
+            greetings: [
+                "A mystical {order}, please.",
+                "I foresee... I'm still waiting.",
+                "My crystal ball says 'almost ready'.",
+            ],
+            preferences: [],
+        ),
+        (
+            name: "Zafira",
+            race: "wizard",
+            greetings: [
+                "{name} desires {order}.",
+                "{name} could freeze time... but that's cheating.",
+                "Every spell has a casting time. So does cooking.",
             ],
             preferences: [],
         ),
