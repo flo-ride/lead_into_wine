@@ -12,6 +12,7 @@ impl Plugin for EnvironmentPlugin {
     }
 }
 
+
 fn setup_environment(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
@@ -22,10 +23,13 @@ fn setup_environment(
     // === CUSTOMERS VIEW (X = 0.0) ===
     // ==========================================
 
-    // Background Tavern Image
     commands.spawn((
-        Sprite::from_image(asset_server.load("textures/background/tavern.png")),
-        Transform::from_translation(Vec3::new(0.0, 0.0, -10.0)),
+        Node {
+            width: Val::Percent(100.),
+            height: Val::Percent(100.),
+            ..default()
+        },
+        ImageNode::new(asset_server.load("textures/background/tavern.png")),
     ));
 
     // Foreground Tavern Image (assuming it should be spawned)
