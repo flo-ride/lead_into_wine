@@ -10,11 +10,11 @@
     // per-race tuning knobs consumed by the formula above:
     // tolerance divides the raw error before evaluation, mood_bias is added directly
     race_profiles: {
-        "orc": (tolerance: 1.5, mood_bias: 0.1),
-        "elf": (tolerance: 0.6, mood_bias: 0.0),
-        "dwarf": (tolerance: 1.0, mood_bias: -0.05),
-        "human": (tolerance: 1.0, mood_bias: 0.0),
-        "wizard": (tolerance: 0.8, mood_bias: 0.0),
+        "orc": (texture: "orc.png", tolerance: 1.5, mood_bias: 0.1),
+        "elf": (texture: "elf.png", tolerance: 0.6, mood_bias: 0.0),
+        "dwarf": (texture: "dwarf.png", tolerance: 1.0, mood_bias: -0.05),
+        "human": (texture: "human.png", tolerance: 1.0, mood_bias: 0.0),
+        "wizard": (texture: "wizard.png", tolerance: 0.8, mood_bias: 0.0),
     },
 
     // named personas as a map: name -> persona data
@@ -23,6 +23,7 @@
     personas: {
         "bob": (
             race: "orc",
+            texture: "knight.png",
             greetings: [
                 "Hello there!",
                 "What's brewing, barkeep?",
