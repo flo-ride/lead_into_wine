@@ -20,48 +20,48 @@
     // named personas as a map: name -> persona data
     // preferences let a persona react differently to specific recipes
     // (tolerance_bonus stacks on top of the race's base tolerance)
-    personas: {
-        "bob": (
+    personas: [
+        (
+            name: "bob",
             race: "orc",
             texture: "knight.png",
             greetings: [
                 "Hello there!",
                 "What's brewing, barkeep?",
             ],
-            preferences: [
-            ],
+            preferences: [],
         ),
-        "bobette": (
+        (
+            name: "bobette",
             race: "orc",
             greetings: [
                 "Evening! Surprise me.",
             ],
-            preferences: [
-            ],
+            preferences: [],
         ),
-        "bobo": (
+        (
+            name: "bobo",
             race: "orc",
             greetings: [
                 "Bobo thirsty. Bobo wait.",
             ],
-            preferences: [
-            ],
+            preferences: [],
         ),
-        "elowen": (
+        (
+            name: "elowen",
             race: "elf",
             greetings: [
                 "I expect precision, bartender.",
             ],
-            preferences: [
-            ],
+            preferences: [],
         ),
-        "thrundir": (
+        (
+            name: "thrundir",
             race: "dwarf",
             greetings: [
                 "Make it strong or don't bother.",
             ],
-            preferences: [
-            ],
+            preferences: [],
         ),
-    },
+    ]
 )
