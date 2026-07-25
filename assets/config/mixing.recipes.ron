@@ -15,19 +15,19 @@
     // combinaisons). 'stagnant_water' est le seul type qui represente un melange
     // rate dans cette matrice.
     result_types: {
-        "beer_butter": (name: "Biere au beurre", texture: ""),
-        "apple_wine": (name: "Apple Wine", texture: ""),
-        "strong_wine": (name: "Strong Wine", texture: ""),
-        "stagnant_water": (name: "Eau croupie", texture: ""),  // melange rate
-        "love_potion": (name: "Philtre d'Amour", texture: ""),
-        "invisibility_potion": (name: "Potion d'Invisibilite", texture: ""),
-        "luck_potion": (name: "Potion de Chance", texture: ""),
-        "strength_elixir": (name: "Elixir de Force", texture: ""),
-        "hopped_cider": (name: "Cidre Houblonne", texture: ""),
-        "strong_beer": (name: "Strong Beer", texture: ""),
+        "beer_butter": (name: "Butterbeer", texture: ""), 
+        "apple_wine": (name: "Apple Wine", texture: ""), 
+        "strong_wine": (name: "Strong Wine", texture: ""), 
+        "stagnant_water": (name: "Stagnant water", texture: ""),
+        "love_potion": (name: "Love Potion", texture: ""), 
+        "invisibility_potion": (name: "Invisibility Potion", texture: ""), 
+        "luck_potion": (name: "Lucky Potion", texture: ""), 
+        "strength_elixir": (name: "Strength Elixir", texture: ""), 
+        "hopped_cider": (name: "Hoppy Cider", texture: ""), 
+        "strong_beer": (name: "Strong Beer", texture: ""), 
         "strong_apple": (name: "Strong Apple", texture: ""),
-        "healing_elixir": (name: "Elixir de Soin", texture: ""),
-        "sleep_potion": (name: "Potion de Sommeil", texture: ""),
+        "healing_elixir": (name: "Healing Elixir", texture: ""),
+        "sleep_potion": (name: "Sleep Potion", texture: ""),
     },
 
     // Recettes : chaque paire d'ingredients pointe vers un id de result_types.
