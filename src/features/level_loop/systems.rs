@@ -31,17 +31,37 @@ fn get_day_config(assets: Res<Assets<PersonnaConfig>>, day: u32) -> CurrentLevel
     }
 }
 
+fn spawn_first_customer(
+    current_level: &CurrentLevel,
+    pnj: &mut CurrentPnjIndex,
+    arrived_events: &mut MessageWriter<CustomerArrived>,
+) {
+    if current_level.customer_list.is_empty() {
+        pnj.0 = 0;
+        return;
+    }
+
+    let customer = &current_level.customer_list[0];
+    info!("Customer {} ({}) arrived!", customer.name, customer.race);
+    arrived_events.write(CustomerArrived { index: 0 });
+    pnj.0 = 1;
+}
+
 pub fn init_level_loop(
     mut commands: Commands,
     assets: Res<Assets<PersonnaConfig>>,
     level_day: Option<Res<LevelDay>>,
+    mut arrived_events: MessageWriter<CustomerArrived>,
 ) {
     let day = level_day.map(|l| l.day).unwrap_or(1);
     let current_level = get_day_config(assets, day);
+    let mut pnj = CurrentPnjIndex(0);
+
+    spawn_first_customer(&current_level, &mut pnj, &mut arrived_events);
 
     commands.insert_resource(LevelDay { day });
     commands.insert_resource(current_level);
-    commands.insert_resource(CurrentPnjIndex(0));
+    commands.insert_resource(pnj);
 }
 
 pub fn level_loop_system(
@@ -62,7 +82,7 @@ pub fn level_loop_system(
 
         level_day.day += 1;
         *current_level = get_day_config(assets, level_day.day);
-        pnj.0 = 0;
+        spawn_first_customer(&current_level, &mut pnj, &mut arrived_events);
         return;
     }
 
@@ -74,12 +94,12 @@ pub fn level_loop_system(
         current_level.customer_timer.tick(time.delta());
 
         if current_level.customer_timer.just_finished() {
-            pnj.0 += 1;
             let customer = &current_level.customer_list[pnj_index];
             info!("Customer {} ({}) arrived!", customer.name, customer.race);
 
             arrived_events.write(CustomerArrived { index: pnj_index });
 
+            pnj.0 += 1;
             if pnj.0 < current_level.customer_list.len() {
                 current_level.customer_timer.reset();
             }
