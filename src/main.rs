@@ -23,7 +23,7 @@ pub fn main() {
                 })
                 .set(WindowPlugin {
                     primary_window: Some(Window {
-                        resolution: (1280, 720).into(),
+                        // resolution: (1280, 720).into(),
                         title: "Lead Into Wine".into(),
                         // Tells Wasm to resize the window according to the available canvas
                         fit_canvas_to_parent: true,
@@ -47,7 +47,7 @@ pub fn main() {
         .add_plugins(PersonnaPlugin)
         .add_plugins(RecipesPlugin)
         .add_plugins(ui::MenuPlugin)
-        .add_plugins(views::ViewsPlugin)
+        // .add_plugins(views::ViewsPlugin)
         .add_plugins(environment::EnvironmentPlugin)
         .add_plugins(AsepriteUltraPlugin)
         .run();
