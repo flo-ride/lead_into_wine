@@ -3,7 +3,7 @@ use crate::features::shelf::assets::BackgroundAssets;
 use crate::core::states::ShelfState;
 
 use bevy::{prelude::*, window::PrimaryWindow};
-use bevy_aseprite_ultra::prelude::{Animation, AseAnimation, AseSlice};
+use bevy_aseprite_ultra::prelude::{Animation, AseAnimation};
 
 #[derive(Component)]
 pub struct Shelf;
@@ -57,6 +57,20 @@ pub fn setup_shelf(
     ));
 }
 
+pub fn handle_player_keyboard_shelf(
+    current_state: Res<State<ShelfState>>,
+    mut next_state: ResMut<NextState<ShelfState>>,
+    input: Res<ButtonInput<KeyCode>>,
+) {
+    if input.just_pressed(KeyCode::Space) {
+        let next = match current_state.get() {
+            ShelfState::Closed => ShelfState::Open,
+            ShelfState::Open => ShelfState::Closed,
+        };
+        next_state.set(next);
+    }
+}
+
 pub fn handle_shelf_button(
     interaction_query: Query<&Interaction, (Changed<Interaction>, With<ShelfPullButton>)>,
     current_state: Res<State<ShelfState>>,
@@ -64,7 +78,6 @@ pub fn handle_shelf_button(
 ) {
     for interaction in interaction_query.iter() {
         if *interaction == Interaction::Pressed {
-            info!("Pressed");
             let next = match current_state.get() {
                 ShelfState::Closed => ShelfState::Open,
                 ShelfState::Open => ShelfState::Closed,
@@ -78,6 +91,7 @@ pub fn animate_shelf_transition(
     time: Res<Time>,
     current_state: Res<State<ShelfState>>,
     mut shelf_query: Query<&mut Transform, With<Shelf>>,
+    mut button_query: Query<&mut Node, With<ShelfPullButton>>,
 ) {
     let target_x = match current_state.get() {
         ShelfState::Closed => SHELF_CLOSED_X,
@@ -89,5 +103,14 @@ pub fn animate_shelf_transition(
             .translation
             .x
             .lerp(target_x, time.delta_secs() * SHELF_MOVE_SPEED);
+    }
+
+    let button_target_x = match current_state.get() {
+        ShelfState::Closed => SHELF_OPEN_X,
+        ShelfState::Open => SHELF_CLOSED_X,
+    };
+
+    if let Ok(mut node) = button_query.single_mut() {
+        node.right = Val::Px(15.0 + button_target_x);
     }
 }

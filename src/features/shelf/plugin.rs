@@ -2,7 +2,10 @@ use crate::{
     core::states::{GameState, ShelfState},
     features::shelf::{
         assets::BackgroundAssets,
-        systems::{animate_shelf_transition, handle_shelf_button, setup_shelf},
+        systems::{
+            animate_shelf_transition, handle_player_keyboard_shelf, handle_shelf_button,
+            setup_shelf,
+        },
     },
 };
 use bevy::prelude::*;
@@ -21,7 +24,11 @@ impl Plugin for ShelfPlugin {
             .add_systems(OnEnter(GameState::Playing), setup_shelf)
             .add_systems(
                 Update,
-                (handle_shelf_button, animate_shelf_transition)
+                (
+                    handle_shelf_button,
+                    handle_player_keyboard_shelf,
+                    animate_shelf_transition,
+                )
                     .run_if(in_state(GameState::Playing)),
             );
     }
