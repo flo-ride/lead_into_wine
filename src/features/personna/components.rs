@@ -41,6 +41,6 @@ impl PersonnaConfig {
                     .get(&persona.race)
                     .and_then(|race| race.texture.as_deref())
             })
-            .unwrap_or("knight.png")
+            .unwrap_or("warrior.aseprite")
     }
 }
