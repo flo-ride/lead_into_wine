@@ -49,7 +49,11 @@ fn setup_environment(
             animation: Animation::default(),
         },
         Sprite::default(),
-        Transform::from_xyz(0.0, 0.0, -10.0),
+        Transform {
+            translation: Vec3::new(-510.0, 190.0, -10.0),
+            scale: Vec3::splat(0.7),
+            ..default()
+        },
     ));
 
     // Invisible Counter (Tavern)

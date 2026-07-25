@@ -32,7 +32,7 @@ pub fn setup_shelf(
             custom_size: Some(Vec2::new(window.width(), window.height())),
             ..default()
         },
-        Transform::from_xyz(SHELF_CLOSED_X, 0.0, 10.0),
+        Transform::from_xyz(SHELF_CLOSED_X, 0.0, 0.0),
         Shelf,
     ));
 
