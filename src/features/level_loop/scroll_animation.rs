@@ -4,7 +4,7 @@ use bevy_aseprite_ultra::prelude::{Animation, AseAnimation};
 use crate::{
     core::components::Scroll,
     environment::UiAssets,
-    features::level_loop::components::{CustomerArrived, DayEnded},
+    features::level_loop::components::{CustomerArrived, DayEnded, Leaving},
 };
 
 #[derive(Component)]
@@ -81,7 +81,7 @@ pub fn start_scroll_exiting(
     mut commands: Commands,
     mut day_ended_events: MessageReader<DayEnded>,
     scroll_query: Query<(Entity, &Transform), With<Scroll>>,
-
+    leaving_pnj: Query<Entity, Added<Leaving>>,
 ) {
     if day_ended_events.read().next().is_none() && leaving_pnj.iter().next().is_none() {
         return;
