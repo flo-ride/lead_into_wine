@@ -19,7 +19,6 @@ impl Plugin for RecipesPlugin {
 
 #[derive(AssetCollection, Resource)]
 pub struct RecipesAssets {
-    #[expect(dead_code)]
     #[asset(path = "config/mixing.recipes.ron")]
     pub recipes: Handle<RecipesConfig>,
 }

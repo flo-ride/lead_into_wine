@@ -28,7 +28,6 @@ pub fn spawn_scroll(
     mut commands: Commands,
     mut arrived_events: MessageReader<CustomerArrived>,
     asset_server: Res<AssetServer>,
-    existing_scroll: Query<Entity, (With<Scroll>, Without<ScrollExiting>)>,
 ) {
     for _ in arrived_events.read() {
         let start_x = SCROLL_REST_X - SCROLL_OFFSET_X;

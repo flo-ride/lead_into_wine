@@ -4,12 +4,6 @@ use bevy::prelude::*;
 pub struct MainCamera;
 
 #[derive(Component)]
-pub struct LoadingScreen;
-
-#[derive(Component)]
-pub struct LoadingText;
-
-#[derive(Component)]
 pub struct StartScreen;
 
 #[derive(Component)]
