@@ -1,5 +1,5 @@
 use crate::{
-    core::states::{GameState, ShelfState},
+    core::states::GameState,
     features::shelf::{
         assets::BackgroundAssets,
         systems::{
@@ -15,21 +15,20 @@ pub struct ShelfPlugin;
 
 impl Plugin for ShelfPlugin {
     fn build(&self, app: &mut App) {
-        app.init_state::<ShelfState>()
-            .add_loading_state(
-                LoadingState::new(GameState::Loading)
-                    .continue_to_state(GameState::initial()) // Corrige la transition
-                    .load_collection::<BackgroundAssets>(),
+        app.add_loading_state(
+            LoadingState::new(GameState::Loading)
+                .continue_to_state(GameState::initial()) // Corrige la transition
+                .load_collection::<BackgroundAssets>(),
+        )
+        .add_systems(OnEnter(GameState::Playing), setup_shelf)
+        .add_systems(
+            Update,
+            (
+                handle_shelf_button,
+                handle_player_keyboard_shelf,
+                animate_shelf_transition,
             )
-            .add_systems(OnEnter(GameState::Playing), setup_shelf)
-            .add_systems(
-                Update,
-                (
-                    handle_shelf_button,
-                    handle_player_keyboard_shelf,
-                    animate_shelf_transition,
-                )
-                    .run_if(in_state(GameState::Playing)),
-            );
+                .run_if(in_state(GameState::Playing)),
+        );
     }
 }

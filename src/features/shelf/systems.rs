@@ -1,4 +1,6 @@
 use crate::features::shelf::assets::BackgroundAssets;
+use crate::physics::GameLayer;
+use avian2d::prelude::*;
 
 use crate::core::states::ShelfState;
 
@@ -17,18 +19,60 @@ const SHELF_MOVE_SPEED: f32 = 5.0;
 
 pub fn setup_shelf(mut commands: Commands, assets: Res<BackgroundAssets>) {
     // La shelf elle-même, part fermée (à droite)
-    commands.spawn((
-        AseAnimation {
-            aseprite: assets.front_shelf.clone(),
-            animation: Animation::default(),
-        },
-        Sprite {
-            custom_size: Some(Vec2::new(1280., 720.)),
-            ..default()
-        },
-        Transform::from_xyz(SHELF_CLOSED_X, 0.0, 0.0),
-        Shelf,
-    ));
+    commands
+        .spawn((
+            AseAnimation {
+                aseprite: assets.front_shelf.clone(),
+                animation: Animation::default(),
+            },
+            Sprite {
+                custom_size: Some(Vec2::new(1280., 720.)),
+                ..default()
+            },
+            Transform::from_xyz(SHELF_CLOSED_X, 0.0, 2.0), // Z=2.0 pour couvrir le mug
+            Shelf,
+            RigidBody::Kinematic,
+            LinearVelocity::ZERO,
+        ))
+        .with_children(|parent| {
+            let layer = CollisionLayers::new([GameLayer::ShelfStructure], [GameLayer::ShelfItem]);
+            // Base (sur les roues)
+            parent.spawn((
+                Collider::rectangle(1280.0, 40.0),
+                Transform::from_xyz(0.0, -220.0, 0.0),
+                layer.clone(),
+            ));
+            // Étagère 1
+            parent.spawn((
+                Collider::rectangle(1280.0, 40.0),
+                Transform::from_xyz(0.0, -70.0, 0.0),
+                layer.clone(),
+            ));
+            // Étagère 2
+            parent.spawn((
+                Collider::rectangle(1280.0, 40.0),
+                Transform::from_xyz(0.0, 70.0, 0.0),
+                layer.clone(),
+            ));
+            // Étagère 3
+            parent.spawn((
+                Collider::rectangle(1280.0, 40.0),
+                Transform::from_xyz(0.0, 210.0, 0.0),
+                layer.clone(),
+            ));
+
+            // Murs de l'étagère
+            parent.spawn((
+                Collider::rectangle(40.0, 720.0),
+                Transform::from_xyz(-620.0, 0.0, 0.0),
+                layer.clone(),
+            ));
+            parent.spawn((
+                Collider::rectangle(40.0, 720.0),
+                Transform::from_xyz(620.0, 0.0, 0.0),
+                layer.clone(),
+            ));
+        });
 
     // Bouton pour tirer la shelf
     commands.spawn((
@@ -82,9 +126,8 @@ pub fn handle_shelf_button(
 }
 
 pub fn animate_shelf_transition(
-    time: Res<Time>,
     current_state: Res<State<ShelfState>>,
-    mut shelf_query: Query<&mut Transform, With<Shelf>>,
+    mut shelf_query: Query<(&Transform, &mut LinearVelocity), With<Shelf>>,
     mut button_query: Query<&mut Node, With<ShelfPullButton>>,
 ) {
     let target_x = match current_state.get() {
@@ -92,11 +135,11 @@ pub fn animate_shelf_transition(
         ShelfState::Open => SHELF_OPEN_X,
     };
 
-    if let Ok(mut transform) = shelf_query.single_mut() {
-        transform.translation.x = transform
-            .translation
-            .x
-            .lerp(target_x, time.delta_secs() * SHELF_MOVE_SPEED);
+    if let Ok((transform, mut velocity)) = shelf_query.single_mut() {
+        let diff = target_x - transform.translation.x;
+        // On donne une vélocité proportionnelle à la distance,
+        // ce qui recrée le comportement du lerp mais en utilisant le moteur physique.
+        velocity.x = diff * SHELF_MOVE_SPEED;
     }
 
     let button_target_x = match current_state.get() {

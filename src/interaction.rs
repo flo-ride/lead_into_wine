@@ -1,4 +1,5 @@
 use crate::core::components::MainCamera;
+use crate::physics::GameLayer;
 use avian2d::prelude::*;
 use bevy::prelude::*;
 
@@ -12,7 +13,8 @@ impl Plugin for InteractionPlugin {
                 update_cursor_pos,
                 handle_grab_and_release,
                 update_held_position,
-            ),
+            )
+                .run_if(in_state(crate::core::states::GameState::Playing)),
         );
     }
 }
@@ -52,14 +54,42 @@ fn handle_grab_and_release(
     spatial_query: SpatialQuery,
     held_query: Query<Entity, With<Held>>,
     draggable_query: Query<Entity, With<Draggable>>,
+    shelf_state: Res<State<crate::core::states::ShelfState>>,
+    mut transforms: Query<&mut Transform>,
 ) {
     if buttons.just_pressed(MouseButton::Left) {
         // If we are already holding something, release it
         if let Some(held_entity) = held_query.iter().next() {
+            let (collision_layers, z_index) = match shelf_state.get() {
+                crate::core::states::ShelfState::Open => (
+                    CollisionLayers::new(
+                        [GameLayer::ShelfItem],
+                        [
+                            GameLayer::Environment,
+                            GameLayer::ShelfItem,
+                            GameLayer::ShelfStructure,
+                        ],
+                    ),
+                    3.0,
+                ),
+                crate::core::states::ShelfState::Closed => (
+                    CollisionLayers::new(
+                        [GameLayer::TavernItem],
+                        [GameLayer::Environment, GameLayer::TavernItem],
+                    ),
+                    1.0,
+                ),
+            };
+
+            if let Ok(mut transform) = transforms.get_mut(held_entity) {
+                transform.translation.z = z_index;
+            }
+
             commands
                 .entity(held_entity)
                 .remove::<Held>()
-                .insert(RigidBody::Dynamic); // Make it fall again
+                .insert(RigidBody::Dynamic) // Make it fall again
+                .insert(collision_layers);
         } else {
             // Otherwise, try to grab something under the cursor
             let filter = SpatialQueryFilter::default();
