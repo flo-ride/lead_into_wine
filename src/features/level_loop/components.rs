@@ -11,6 +11,7 @@ pub struct CurrentLevel {
     pub customer_list: Vec<Persona>,
     pub customer_timer: Timer,
     pub level_timer: Timer,
+    pub customer_order: String,
 }
 
 #[derive(Resource)]

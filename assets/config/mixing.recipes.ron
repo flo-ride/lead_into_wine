@@ -11,23 +11,22 @@
         "Mandrake Root",
     ],
 
-    // Catalogue des types de resultats finaux (limite et reutilise par plusieurs
-    // combinaisons). 'stagnant_water' est le seul type qui represente un melange
-    // rate dans cette matrice.
+    // Catalogue des types de resultats finaux.
+    // Le champ 'texture' correspond au nom de base du Tag Aseprite (sans le chiffre de la dose)
     result_types: {
-        "beer_butter": (name: "Biere au beurre", texture: ""),
-        "apple_wine": (name: "Apple Wine", texture: ""),
-        "strong_wine": (name: "Strong Wine", texture: ""),
-        "stagnant_water": (name: "Eau croupie", texture: ""),  // melange rate
-        "love_potion": (name: "Philtre d'Amour", texture: ""),
-        "invisibility_potion": (name: "Potion d'Invisibilite", texture: ""),
-        "luck_potion": (name: "Potion de Chance", texture: ""),
-        "strength_elixir": (name: "Elixir de Force", texture: ""),
-        "hopped_cider": (name: "Cidre Houblonne", texture: ""),
-        "strong_beer": (name: "Strong Beer", texture: ""),
-        "strong_apple": (name: "Strong Apple", texture: ""),
-        "healing_elixir": (name: "Elixir de Soin", texture: ""),
-        "sleep_potion": (name: "Potion de Sommeil", texture: ""),
+        "beer_butter": (name: "Biere au beurre", texture: "Yellow"),
+        "apple_wine": (name: "Apple Wine", texture: "Orange"),
+        "strong_wine": (name: "Strong Wine", texture: "Red"),
+        "stagnant_water": (name: "Eau croupie", texture: "Green"),  // melange rate
+        "love_potion": (name: "Philtre d'Amour", texture: "Purple"),
+        "invisibility_potion": (name: "Potion d'Invisibilite", texture: "Blue"),
+        "luck_potion": (name: "Potion de Chance", texture: "Yellow"),
+        "strength_elixir": (name: "Elixir de Force", texture: "Orange"),
+        "hopped_cider": (name: "Cidre Houblonne", texture: "Green"),
+        "strong_beer": (name: "Strong Beer", texture: "Yellow"),
+        "strong_apple": (name: "Strong Apple", texture: "Orange"),
+        "healing_elixir": (name: "Elixir de Soin", texture: "Red"),
+        "sleep_potion": (name: "Potion de Sommeil", texture: "Purple"),
     },
 
     // Recettes : chaque paire d'ingredients pointe vers un id de result_types.

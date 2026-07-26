@@ -1,16 +1,16 @@
-use crate::features::level_loop::components::*;
+use crate::core::components::Scroll;
 use crate::features::personna::components::*;
-use avian2d::{
-    collision::collider::Collider,
-    dynamics::rigid_body::{LinearVelocity, LockedAxes, RigidBody},
-};
-use bevy::prelude::*;
-use rand::seq::IndexedRandom;
+use crate::features::recipes::components::RecipesConfig;
+use crate::{features::level_loop::components::*, ui::UiFont};
+use avian2d::{collision::collider::Collider, dynamics::rigid_body::LinearVelocity};
+use bevy::{prelude::*, text::TextBounds};
+use bevy_aseprite_ultra::prelude::{Animation, AseAnimation};
+use rand::seq::{IndexedRandom, IteratorRandom};
 use std::time::Duration;
 
 fn get_day_config(assets: Res<Assets<PersonnaConfig>>, day: u32) -> CurrentLevel {
     let customer_count = 3 + (day as usize);
-    let customer_delay = 5u64.saturating_sub(day as u64 / 4).max(2);
+    let customer_delay = 5u64.saturating_sub(day as u64 / 4).max(2) / 2;
     let day_duration = Duration::from_secs(customer_delay * customer_count as u64 + 3);
 
     let config = assets
@@ -28,6 +28,7 @@ fn get_day_config(assets: Res<Assets<PersonnaConfig>>, day: u32) -> CurrentLevel
         customer_list: customers,
         customer_timer: Timer::new(Duration::from_secs(customer_delay), TimerMode::Once),
         level_timer: Timer::new(day_duration, TimerMode::Once),
+        customer_order: "".to_string(),
     }
 }
 
@@ -107,6 +108,37 @@ pub fn level_loop_system(
     }
 }
 
+pub fn write_customer_text(
+    mut commands: Commands,
+    current_level: Res<CurrentLevel>,
+    mut arrived_events: MessageReader<CustomerArrived>,
+    mut scrool_query: Query<(Entity, &mut Scroll)>,
+    ui_font: Res<UiFont>,
+) {
+    for event in arrived_events.read() {
+        let Some(current_pnj) = current_level.customer_list.get(event.index) else {
+            continue;
+        };
+
+        for (entity, _) in &mut scrool_query {
+            commands.entity(entity).despawn_children();
+
+            let customer_text = current_pnj.greetings[0]
+                .replace("{order}", &current_level.customer_order)
+                .replace("{name}", &current_pnj.name);
+            commands.entity(entity).with_children(|parent| {
+                parent.spawn((
+                    Text2d::new(customer_text),
+                    ui_font.text(32.0),
+                    TextColor(Color::BLACK),
+                    Transform::from_xyz(0.0, 0.0, 1.0),
+                    TextBounds::new_horizontal(200.0), // Bounded width, unbounded height
+                ));
+            });
+        }
+    }
+}
+
 pub fn spawn_pnj(
     mut commands: Commands,
     game_assets: Res<AssetServer>,
@@ -132,18 +164,16 @@ pub fn spawn_pnj(
         let pnj_model = commands
             .spawn((
                 Pnj,
-                Sprite {
-                    image: game_assets.load(format!("models/personna/{}", texture)),
-                    custom_size: Some(Vec2::new(80.0, 180.0)),
-                    ..default()
+                AseAnimation {
+                    aseprite: game_assets.load(format!("models/personna/{}", texture)),
+                    animation: Animation::default(),
                 },
+                Sprite::default(),
                 Transform {
-                    translation: Vec3::new(100.0, 100.0, 0.0),
-                    scale: Vec3::splat(2.5),
+                    translation: Vec3::new(100.0, -70.0, -5.0),
+                    scale: Vec3::splat(1.5),
                     ..default()
                 },
-                RigidBody::Dynamic,
-                LockedAxes::ROTATION_LOCKED,
                 Collider::rectangle(80.0, 180.0),
             ))
             .id();
@@ -157,6 +187,25 @@ pub fn spawn_pnj(
             .id();
 
         commands.entity(pnj_model).add_child(pnj_hitbox);
+    }
+}
+
+pub fn select_recipe(
+    mut current_level: ResMut<CurrentLevel>,
+    mut arrived_events: MessageReader<CustomerArrived>,
+    assets: Res<Assets<RecipesConfig>>,
+) {
+    for _ in arrived_events.read() {
+        let config = assets
+            .iter()
+            .next()
+            .map(|(_, c)| c)
+            .expect("Config should be loaded");
+        let mut rng = rand::rng();
+
+        let recipe_id = config.recipes.values().choose(&mut rng).unwrap();
+        let recipe = config.result_types.get(recipe_id).unwrap().name.clone();
+        current_level.customer_order = recipe.to_string();
     }
 }
 
