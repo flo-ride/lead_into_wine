@@ -8,5 +8,6 @@ const TEXT_MUTED: Color = Color::srgb(0.60, 0.50, 0.40);
 
 pub mod background;
 pub mod credits;
+pub mod game_over;
 pub mod playing;
 pub mod start;

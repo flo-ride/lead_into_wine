@@ -1,18 +1,43 @@
-use crate::alchemy::{LiquidContainer, LiquidVisual};
+use std::f32::consts::PI;
 
+use crate::alchemy::{LiquidContainer, LiquidVisual};
 use crate::core::states::GameState;
+use crate::features::level_loop::components::DayEnded;
+use crate::features::level_loop::systems::LevelEntity;
 use crate::interaction::Draggable;
 use crate::physics::GameLayer;
+use crate::ui::UiFont;
 use avian2d::prelude::*;
 use bevy::prelude::*;
 use bevy_aseprite_ultra::prelude::*;
 use bevy_asset_loader::prelude::*;
+use rand::RngExt;
 
 pub struct EnvironmentPlugin;
 
+/// Ressource pour suivre le nombre de vies restantes
+#[derive(Resource)]
+pub struct PlayerLives {
+    pub count: u8,
+}
+
+impl Default for PlayerLives {
+    fn default() -> Self {
+        Self { count: 3 }
+    }
+}
+
+/// Marqueur pour le composant UI qui affiche le texte/icônes des vies
+#[derive(Component)]
+pub struct LivesText;
 impl Plugin for EnvironmentPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(OnEnter(GameState::Playing), setup_environment)
+            .init_resource::<PlayerLives>()
+            .add_systems(
+                Update,
+                spawn_additional_bottles_on_new_day.run_if(in_state(GameState::Playing)),
+            )
             .add_loading_state(
                 LoadingState::new(GameState::Loading)
                     .continue_to_state(GameState::initial())
@@ -20,6 +45,10 @@ impl Plugin for EnvironmentPlugin {
             );
     }
 }
+
+/// Marqueur pour identifier les bouteilles
+#[derive(Component)]
+pub struct ShelfBottle;
 
 #[derive(AssetCollection, Resource)]
 pub struct UiAssets {
@@ -45,16 +74,117 @@ pub struct UiAssets {
     pub unicorn_tears_bottle: Handle<Aseprite>,
 }
 
+/// Fonction utilitaire pour instancier une nouvelle bouteille
+fn spawn_bottle(
+    commands: &mut Commands,
+    aseprite: Handle<Aseprite>,
+    content_name: &str,
+    x_pos: f32,
+    level: usize,
+) {
+    commands.spawn((
+        ShelfBottle,
+        LevelEntity,
+        AseAnimation {
+            aseprite,
+            animation: Animation::tag("Full"),
+        },
+        Transform {
+            translation: Vec3::new(x_pos, 160.0, 3.0),
+            scale: Vec3::splat(1.7),
+            ..default()
+        },
+        Sprite::default(),
+        RigidBody::Dynamic,
+        LockedAxes::ROTATION_LOCKED,
+        Collider::rectangle(60.0, 180.0),
+        CollisionLayers::new(
+            [GameLayer::ShelfItem],
+            [
+                GameLayer::Environment,
+                GameLayer::ShelfItem,
+                GameLayer::ShelfStructure,
+            ],
+        ),
+        Draggable,
+        LiquidContainer {
+            content: Some(content_name.to_string()),
+            level,
+            max_doses: 10,
+            is_glass: false,
+        },
+    ));
+}
+
+/// Trouve une position X sur l'étagère en évitant les bouteilles déjà présentes
+fn find_free_x_position(existing_x_positions: &[f32]) -> f32 {
+    let mut rng = rand::rng();
+    let min_x = 700.0;
+    let max_x = 1180.0;
+    let min_distance = 80.0; // Espacement minimal entre 2 bouteilles (largeur du collider + marge)
+
+    for _ in 0..50 {
+        let candidate_x = rng.random_range(min_x..=max_x);
+        let is_valid = existing_x_positions
+            .iter()
+            .all(|&x| (x - candidate_x).abs() >= min_distance);
+
+        if is_valid {
+            return candidate_x;
+        }
+    }
+
+    // Si l'étagère est trop pleine, fallback sur une position aléatoire simple
+    rng.random_range(min_x..=max_x)
+}
+
+/// Génère 3 nouvelles bouteilles sans toucher aux anciennes
+pub fn spawn_additional_bottles_on_new_day(
+    mut commands: Commands,
+    mut day_ended_events: MessageReader<DayEnded>,
+    existing_bottles: Query<&Transform, With<ShelfBottle>>,
+    ui_assets: Res<UiAssets>,
+) {
+    if day_ended_events.read().next().is_none() {
+        return;
+    }
+
+    let mut rng = rand::rng();
+
+    // On récupère la position X de toutes les bouteilles actuellement sur l'étagère (Y proche de 160.0)
+    let mut shelf_x_positions: Vec<f32> = existing_bottles
+        .iter()
+        .filter(|transform| (transform.translation.y - 160.0).abs() < 50.0)
+        .map(|transform| transform.translation.x)
+        .collect();
+
+    let bottle_types = [
+        (ui_assets.milk_bottle.clone(), "milk"),
+        (ui_assets.wine_bottle.clone(), "wine"),
+        (ui_assets.unicorn_tears_bottle.clone(), "unicorn_tear"),
+    ];
+
+    for (aseprite, content) in bottle_types {
+        let x_pos = find_free_x_position(&shelf_x_positions);
+        shelf_x_positions.push(x_pos); // On ajoute la nouvelle position pour que la bouteille suivante en tienne compte
+
+        let random_level = rng.random_range(5..=10);
+        spawn_bottle(&mut commands, aseprite, content, x_pos, random_level);
+    }
+}
+
 fn setup_environment(
     mut commands: Commands,
     ui_assets: Res<UiAssets>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
+    mut lives: ResMut<PlayerLives>,
+    ui_font: Res<UiFont>,
 ) {
     // ==========================================
     // === CUSTOMERS VIEW (X = 0.0) ===
     // ==========================================
-
+    lives.count = 3;
     // Background Tavern Image
     commands.spawn((
         AseAnimation {
@@ -84,22 +214,20 @@ fn setup_environment(
     commands.spawn((
         Transform::from_translation(Vec3::new(0.0, -450.0, -1.0)),
         RigidBody::Static,
-        Collider::rectangle(3000.0, 400.0), // Top edge is at Y = -250
+        Collider::rectangle(3000.0, 400.0),
         CollisionLayers::new(
             [GameLayer::Environment],
             [GameLayer::TavernItem, GameLayer::ShelfItem],
         ),
     ));
 
-    // Invisible Walls to prevent items from falling off-screen (Tavern)
-    // Left wall
+    // Invisible Walls
     commands.spawn((
         Transform::from_translation(Vec3::new(-650.0, 0.0, -1.0)),
         RigidBody::Static,
         Collider::rectangle(100.0, 2000.0),
         CollisionLayers::new([GameLayer::Environment], [GameLayer::TavernItem]),
     ));
-    // Right wall
     commands.spawn((
         Transform::from_translation(Vec3::new(650.0, 0.0, -1.0)),
         RigidBody::Static,
@@ -109,12 +237,13 @@ fn setup_environment(
 
     let mug = commands
         .spawn((
+            LevelEntity,
             AseAnimation {
                 aseprite: ui_assets.mug.clone(),
                 animation: Animation::default(),
             },
             Transform {
-                translation: Vec3::new(0.0, -175.0, 1.0),
+                translation: Vec3::new(0.0, -175.0, 10.0),
                 scale: Vec3::splat(2.0),
                 ..default()
             },
@@ -136,7 +265,6 @@ fn setup_environment(
         ))
         .id();
 
-    // On garde un LiquidVisual si jamais, mais on le rend invisible (ou on l'enlève)
     let glass_liquid = commands
         .spawn((
             Mesh2d(meshes.add(Rectangle::new(80.0, 130.0))),
@@ -150,38 +278,27 @@ fn setup_environment(
         .id();
     commands.entity(mug).add_child(glass_liquid);
 
-    // Wine Bottle
+    // Spawn de l'UI des vies (en bas au milieu)
+    //
+    let full = " ".repeat(lives.count as usize);
+    let empty = "|".repeat((3 - lives.count) as usize);
+
     commands.spawn((
-        AseAnimation {
-            aseprite: ui_assets.wine_bottle.clone(),
-            animation: Animation::tag("Full"),
-        },
-        Transform {
-            translation: Vec3::new(965.0, 160.0, 3.0),
-            scale: Vec3::splat(2.0),
+        LevelEntity,
+        LivesText,
+        Text::new(format!("{}{}", full, empty)),
+        ui_font.text(56.0),
+        // Gris pierre sombre / ardoise
+        TextColor(Color::srgb_u8(74, 77, 80)),
+        Node {
+            position_type: PositionType::Absolute,
+            bottom: Val::Px(30.0),    // À 20px du bas de l'écran
+            left: Val::Percent(80.0), // Positionné au centre horizontal (50%)
             ..default()
-        },
-        Sprite::default(),
-        RigidBody::Dynamic,
-        LockedAxes::ROTATION_LOCKED,
-        Collider::rectangle(60.0, 180.0), // Approximated collider size for a bottle
-        CollisionLayers::new(
-            [GameLayer::ShelfItem],
-            [
-                GameLayer::Environment,
-                GameLayer::ShelfItem,
-                GameLayer::ShelfStructure,
-            ],
-        ),
-        Draggable,
-        LiquidContainer {
-            content: Some("wine".to_string()),
-            level: 5,
-            max_doses: 5,
-            is_glass: false,
         },
     ));
 
+    // Trash bin
     commands.spawn((
         Transform {
             translation: Vec3::new(570.0, -280.0, 10.0),
@@ -190,7 +307,7 @@ fn setup_environment(
         #[cfg(feature = "dev")]
         Sprite {
             color: Color::srgba(1.0, 0.2, 0.2, 0.5),
-            custom_size: Some(Vec2::new(150.0, 180.0)), // pour visualiser la vraie taille du collider
+            custom_size: Some(Vec2::new(150.0, 180.0)),
             ..default()
         },
         #[cfg(not(feature = "dev"))]
@@ -207,67 +324,16 @@ fn setup_environment(
             is_glass: true,
         },
     ));
-    // Milk Bottle
-    commands.spawn((
-        AseAnimation {
-            aseprite: ui_assets.milk_bottle.clone(),
-            animation: Animation::tag("Full"),
-        },
-        Transform {
-            translation: Vec3::new(765.0, 160.0, 3.0), // À gauche du vin
-            scale: Vec3::splat(2.0),
-            ..default()
-        },
-        Sprite::default(),
-        RigidBody::Dynamic,
-        LockedAxes::ROTATION_LOCKED,
-        Collider::rectangle(60.0, 180.0),
-        CollisionLayers::new(
-            [GameLayer::ShelfItem],
-            [
-                GameLayer::Environment,
-                GameLayer::ShelfItem,
-                GameLayer::ShelfStructure,
-            ],
-        ),
-        Draggable,
-        LiquidContainer {
-            content: Some("milk".to_string()),
-            level: 5,
-            max_doses: 5,
-            is_glass: false,
-        },
-    ));
 
-    // Unicorn Tears Bottle
-    commands.spawn((
-        AseAnimation {
-            aseprite: ui_assets.unicorn_tears_bottle.clone(),
-            animation: Animation::tag("Full"),
-        },
-        Transform {
-            translation: Vec3::new(1165.0, 160.0, 3.0), // À droite du vin
-            scale: Vec3::splat(2.0),
-            ..default()
-        },
-        Sprite::default(),
-        RigidBody::Dynamic,
-        LockedAxes::ROTATION_LOCKED,
-        Collider::rectangle(60.0, 180.0),
-        CollisionLayers::new(
-            [GameLayer::ShelfItem],
-            [
-                GameLayer::Environment,
-                GameLayer::ShelfItem,
-                GameLayer::ShelfStructure,
-            ],
-        ),
-        Draggable,
-        LiquidContainer {
-            content: Some("unicorn_tear".to_string()),
-            level: 5,
-            max_doses: 5,
-            is_glass: false,
-        },
-    ));
+    // Spawn initial des 3 bouteilles au démarrage du jeu
+    let initial_positions = [765.0, 965.0, 1165.0];
+    let initial_bottles = [
+        (ui_assets.milk_bottle.clone(), "milk"),
+        (ui_assets.wine_bottle.clone(), "wine"),
+        (ui_assets.unicorn_tears_bottle.clone(), "unicorn_tear"),
+    ];
+
+    for (i, (aseprite, content)) in initial_bottles.into_iter().enumerate() {
+        spawn_bottle(&mut commands, aseprite, content, initial_positions[i], 10);
+    }
 }
