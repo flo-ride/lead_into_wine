@@ -26,10 +26,11 @@ impl Plugin for LevelLoopPlugin {
                 Update,
                 (
                     level_loop_system,
-                    despawn_pnj,
+                    queue_pnj_spawn,
                     spawn_pnj,
                     select_recipe,
                     write_customer_text,
+                    despawn_pnj,
                     pnj_departure_system,
                 )
                     .chain()
@@ -41,8 +42,8 @@ impl Plugin for LevelLoopPlugin {
                 (
                     animate_scroll_entering,
                     spawn_scroll,
-                    animate_scroll_exiting,
                     start_scroll_exiting,
+                    animate_scroll_exiting,
                 )
                     .chain()
                     .run_if(in_state(GameState::Playing))

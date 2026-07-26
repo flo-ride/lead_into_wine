@@ -18,11 +18,11 @@ pub struct ScrollExiting {
     pub end_x: f32,
 }
 
-const SCROLL_ANIM_DURATION: f32 = 4.4;
+const SCROLL_ANIM_DURATION: f32 = 0.4;
 const SCROLL_REST_X: f32 = -510.0;
 const SCROLL_REST_Y: f32 = 190.0;
 const SCROLL_REST_Z: f32 = -10.0;
-const SCROLL_OFFSET_X: f32 = 250.0; // départ plus à gauche, glisse vers sa position finale
+const SCROLL_OFFSET_X: f32 = 150.0; // départ plus à gauche, glisse vers sa position finale
 
 pub fn spawn_scroll(
     mut commands: Commands,
@@ -31,11 +31,7 @@ pub fn spawn_scroll(
     existing_scroll: Query<Entity, (With<Scroll>, Without<ScrollExiting>)>,
 ) {
     for _ in arrived_events.read() {
-        if !existing_scroll.is_empty() {
-            continue;
-        }
-
-        let start_x = SCROLL_REST_X + SCROLL_OFFSET_X;
+        let start_x = SCROLL_REST_X - SCROLL_OFFSET_X;
 
         commands.spawn((
             Scroll,
@@ -71,9 +67,10 @@ pub fn animate_scroll_entering(
         let t = entering.timer.fraction();
 
         transform.translation.x = entering.start_x.lerp(entering.end_x, t);
-        sprite.color.set_alpha(1.0 - t);
+        sprite.color.set_alpha(t);
 
         if entering.timer.is_finished() {
+            info!("Finish the fade-in");
             commands.entity(entity).remove::<ScrollEntering>();
         }
     }
@@ -82,17 +79,18 @@ pub fn animate_scroll_entering(
 pub fn start_scroll_exiting(
     mut commands: Commands,
     mut day_ended_events: MessageReader<CustomerArrived>,
-    scroll_query: Query<(Entity, &Transform), (With<Scroll>, Without<ScrollExiting>)>,
+    scroll_query: Query<(Entity, &Transform), (With<Scroll>, Without<ScrollEntering>)>,
 ) {
     if day_ended_events.read().next().is_none() {
         return;
     }
 
+    info!("Start the scroll exiting");
     for (entity, transform) in &scroll_query {
         commands.entity(entity).insert(ScrollExiting {
             timer: Timer::from_seconds(SCROLL_ANIM_DURATION, TimerMode::Once),
             start_x: transform.translation.x,
-            end_x: transform.translation.x + SCROLL_OFFSET_X,
+            end_x: transform.translation.x - SCROLL_OFFSET_X,
         });
     }
 }
@@ -110,6 +108,7 @@ pub fn animate_scroll_exiting(
         sprite.color.set_alpha(1.0 - t);
 
         if exiting.timer.is_finished() {
+            info!("Finish the scroll exiting");
             commands.entity(entity).despawn();
         }
     }
