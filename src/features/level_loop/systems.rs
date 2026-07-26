@@ -1,4 +1,6 @@
 use crate::core::components::Scroll;
+use crate::core::states::GameState;
+use crate::environment::{LivesText, PlayerLives};
 use crate::features::personna::components::*;
 use crate::features::recipes::components::RecipesConfig;
 use crate::{features::level_loop::components::*, ui::UiFont};
@@ -9,6 +11,10 @@ use rand::seq::{IndexedRandom, IteratorRandom};
 use std::time::Duration;
 
 const WAIT_INDICATOR_RADIUS: f32 = 6.0;
+
+/// Marqueur apposé sur toutes les entités générées pendant le gameplay
+#[derive(Component)]
+pub struct LevelEntity;
 
 fn wait_indicator_offset(texture: &str) -> (f32, f32) {
     match texture {
@@ -29,13 +35,39 @@ pub struct PendingPnjSpawn {
     pub timer: Timer,
 }
 
-fn get_day_config(assets: Res<Assets<PersonnaConfig>>, day: u32) -> CurrentLevel {
-    const CUSTOMER_DELAY_START_SECS: u64 = 35; // jour 1 : large marge, le temps d'apprendre
-    const CUSTOMER_DELAY_FLOOR_SECS: u64 = 12; // plancher : légèrement sous le temps d'un joueur rapide (20s), pour forcer la pression sans devenir impossible
-    const CUSTOMER_DELAY_DECAY_PER_DAY: u64 = 3; // le délai baisse de 2s par jour
-    const DAY_BUFFER_SECS: u64 = 10; // marge en fin de journée pour finir le dernier client
+#[derive(Component)]
+pub struct DayTransitionText {
+    pub timer: Timer,
+}
 
-    let customer_count = 3 + (day as usize);
+pub fn handle_day_transition_cooldown(
+    mut commands: Commands,
+    time: Res<Time>,
+    mut query: Query<(Entity, &mut DayTransitionText)>,
+    current_level: Res<CurrentLevel>,
+    mut pnj: ResMut<CurrentPnjIndex>,
+    mut arrived_events: MessageWriter<CustomerArrived>,
+) {
+    for (entity, mut transition) in &mut query {
+        transition.timer.tick(time.delta());
+
+        if transition.timer.just_finished() {
+            // Le cooldown de 5s est fini, on détruit le texte
+            commands.entity(entity).despawn();
+
+            // On fait spawner le premier client du nouveau jour
+            spawn_first_customer(&current_level, &mut pnj, &mut arrived_events);
+        }
+    }
+}
+
+fn get_day_config(assets: Res<Assets<PersonnaConfig>>, day: u32) -> CurrentLevel {
+    const CUSTOMER_DELAY_START_SECS: u64 = 3; // jour 1 : large marge, le temps d'apprendre
+    const CUSTOMER_DELAY_FLOOR_SECS: u64 = 4; // plancher : légèrement sous le temps d'un joueur rapide (20s), pour forcer la pression sans devenir impossible
+    const CUSTOMER_DELAY_DECAY_PER_DAY: u64 = 2; // le délai baisse de 2s par jour
+    const DAY_BUFFER_SECS: u64 = 0; // marge en fin de journée pour finir le dernier client
+
+    let customer_count = 1 + (day as usize);
     let customer_delay = CUSTOMER_DELAY_START_SECS
         .saturating_sub(day as u64 * CUSTOMER_DELAY_DECAY_PER_DAY)
         .max(CUSTOMER_DELAY_FLOOR_SECS);
@@ -111,12 +143,21 @@ pub fn init_level_loop(
     assets: Res<Assets<PersonnaConfig>>,
     level_day: Option<Res<LevelDay>>,
     mut arrived_events: MessageWriter<CustomerArrived>,
+    ui_font: Res<UiFont>,
 ) {
     let day = level_day.map(|l| l.day).unwrap_or(1);
     let current_level = get_day_config(assets, day);
     let mut pnj = CurrentPnjIndex(0);
 
-    spawn_first_customer(&current_level, &mut pnj, &mut arrived_events);
+    commands.spawn((
+        Text2d::new(format!("Day {}", day)),
+        ui_font.text(64.0),
+        TextColor(Color::WHITE),
+        Transform::from_xyz(0.0, 0.0, 15.0),
+        DayTransitionText {
+            timer: Timer::from_seconds(2.0, TimerMode::Once),
+        },
+    ));
 
     commands.insert_resource(LevelDay { day });
     commands.insert_resource(current_level);
@@ -124,35 +165,64 @@ pub fn init_level_loop(
 }
 
 pub fn level_loop_system(
+    mut commands: Commands,
     time: Res<Time>,
     mut current_level: ResMut<CurrentLevel>,
     assets: Res<Assets<PersonnaConfig>>,
     mut level_day: ResMut<LevelDay>,
     mut pnj: ResMut<CurrentPnjIndex>,
+    ui_font: Res<UiFont>,
     mut arrived_events: MessageWriter<CustomerArrived>,
     mut day_ended_events: MessageWriter<DayEnded>,
+    transition_query: Query<&DayTransitionText>,
+    pnj_query: Query<Entity, With<Pnj>>,
 ) {
-    current_level.level_timer.tick(time.delta());
-    let pnj_index = pnj.0;
+    // Si le texte "Day X" est affiché, la boucle du niveau est en pause
+    if !transition_query.is_empty() {
+        return;
+    }
 
+    current_level.level_timer.tick(time.delta());
+
+    // 1. Le temps de la journée vient d'expirer : on signale la fin du jour
     if current_level.level_timer.just_finished() {
         info!("Day {} finished!", level_day.day);
-        day_ended_events.write(DayEnded);
+        day_ended_events.write(DayEnded); // déclenche despawn_pnj (le PNJ commence à marcher vers la sortie)
+        return;
+    }
 
+    // 2. Le temps est fini MAIS on attend que le PNJ ait totalement quitté la scène (despawn)
+    if current_level.level_timer.is_finished() {
+        // Tant qu'il y a au moins un PNJ à l'écran, on ne fait rien
+        if !pnj_query.is_empty() {
+            return;
+        }
+
+        // C'EST BON : Plus aucun PNJ à l'écran ! On peut lancer le Jour suivant.
         level_day.day += 1;
         *current_level = get_day_config(assets, level_day.day);
-        spawn_first_customer(&current_level, &mut pnj, &mut arrived_events);
+        pnj.0 = 0; // Réinitialise l'index des PNJ
+
+        // Spawn du texte "Day X" (cooldown 5s)
+        commands.spawn((
+            Text2d::new(format!("Day {}", level_day.day)),
+            ui_font.text(64.0),
+            TextColor(Color::WHITE),
+            Transform::from_xyz(0.0, 0.0, 15.0),
+            DayTransitionText {
+                timer: Timer::from_seconds(3.0, TimerMode::Once),
+            },
+        ));
+
         return;
     }
 
-    if current_level.level_timer.is_finished() {
-        return;
-    }
-
-    if pnj_index < current_level.customer_list.len() {
+    // 3. Gestion du spawn des clients durant la journée (clients 2, 3, etc.)
+    let pnj_index = pnj.0;
+    if pnj_index > 0 && pnj_index < current_level.customer_list.len() {
         current_level.customer_timer.tick(time.delta());
 
-        if current_level.customer_timer.just_finished() {
+        if current_level.customer_timer.is_finished() {
             let customer = &current_level.customer_list[pnj_index];
             info!("Customer {} ({}) arrived!", customer.name, customer.race);
 
@@ -298,23 +368,52 @@ pub fn select_recipe(
         current_level.customer_order = recipe.to_string();
     }
 }
+#[derive(Component)]
+pub struct PnjLeaving;
 
 pub fn despawn_pnj(
     mut commands: Commands,
-    mut day_ended_events: MessageReader<CustomerArrived>,
-    pnj_query: Query<Entity, With<Pnj>>,
+    mut customer_ended_events: MessageReader<CustomerArrived>,
+    mut day_ended_events: MessageReader<DayEnded>,
+    // Exclut les PNJ qui ont DÉJÀ reçu l'ordre de partir
+    pnj_query: Query<Entity, (With<Pnj>, Without<PnjLeaving>)>,
+    mut lives: ResMut<PlayerLives>,
+    mut lives_ui_query: Query<&mut Text, With<LivesText>>,
 ) {
-    if day_ended_events.read().next().is_none() {
+    // Vider les lecteurs d'événements et vérifier si au moins un s'est déclenché
+    let has_day_ended = day_ended_events.read().next().is_some();
+    let has_customer_left = customer_ended_events.read().next().is_some();
+
+    if !has_day_ended && !has_customer_left {
         return;
     }
 
     for entity in &pnj_query {
+        // 1. Appliquer le marqueur pour éviter qu'il ne re-passe ici dans le même frame ou le suivant
+        commands.entity(entity).insert(PnjLeaving);
+
+        // 2. Décrémenter les vies
+        lives.count = lives.count.saturating_sub(1);
+        warn!(
+            "Un client est parti sans être servi ! Vies restantes : {}",
+            lives.count
+        );
+
+        // 3. Mettre à jour l'UI
+        if let Ok(mut text) = lives_ui_query.single_mut() {
+            let full = " ".repeat(lives.count as usize);
+            let empty = "|".repeat((3 - lives.count) as usize);
+            **text = format!("{}{}", full, empty)
+        }
+
+        // 4. Lancer l'animation/logique de départ
         start_pnj_leaving(&mut commands, entity);
     }
 }
 
 pub fn start_pnj_leaving(commands: &mut Commands, entity: Entity) {
     let leave = Leaving::default();
+
     commands
         .entity(entity)
         .insert(leave)
@@ -332,5 +431,11 @@ pub fn pnj_departure_system(
         if transform.translation.x < -680.0 {
             commands.entity(entity).despawn();
         }
+    }
+}
+
+pub fn check_game_over(lives: Res<PlayerLives>, mut next_state: ResMut<NextState<GameState>>) {
+    if lives.count == 0 {
+        next_state.set(GameState::GameOver);
     }
 }

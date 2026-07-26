@@ -9,6 +9,11 @@ use crate::ui::menu::screen::credits::{
     animate_credits_background, despawn_credits_background, despawn_credits_screen,
     spawn_credits_background, spawn_credits_screen, update_credits_button,
 };
+use crate::ui::menu::screen::game_over::{
+    animate_game_over_background, cleanup_level, despawn_game_over_background,
+    despawn_game_over_screen, spawn_game_over_background, spawn_game_over_screen,
+    update_game_over_buttons,
+};
 use crate::ui::menu::screen::playing::{despawn_playing_hud, spawn_playing_hud};
 use crate::ui::menu::screen::start::{
     despawn_start_screen, spawn_start_screen, update_start_menu_buttons,
@@ -48,6 +53,23 @@ impl Plugin for MenuPlugin {
                 Update,
                 (animate_abstract_background, update_start_menu_buttons)
                     .run_if(in_state(GameState::StartMenu)),
+            )
+            .add_systems(
+                OnEnter(GameState::GameOver),
+                (spawn_game_over_background, spawn_game_over_screen),
+            )
+            .add_systems(
+                Update,
+                (animate_game_over_background, update_game_over_buttons)
+                    .run_if(in_state(GameState::GameOver)),
+            )
+            .add_systems(
+                OnExit(GameState::GameOver),
+                (
+                    despawn_game_over_background,
+                    despawn_game_over_screen,
+                    cleanup_level,
+                ),
             );
     }
 }

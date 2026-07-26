@@ -25,6 +25,7 @@ impl Plugin for LevelLoopPlugin {
             .add_systems(
                 Update,
                 (
+                    handle_day_transition_cooldown,
                     level_loop_system,
                     queue_pnj_spawn,
                     spawn_pnj,
@@ -34,6 +35,7 @@ impl Plugin for LevelLoopPlugin {
                     hide_wait_indicator_on_leaving,
                     despawn_pnj,
                     pnj_departure_system,
+                    check_game_over,
                 )
                     .chain()
                     .run_if(in_state(GameState::Playing))
@@ -54,6 +56,6 @@ impl Plugin for LevelLoopPlugin {
     }
 }
 
-fn level_initialized(level: Option<Res<CurrentLevel>>) -> bool {
+pub fn level_initialized(level: Option<Res<CurrentLevel>>) -> bool {
     level.is_some()
 }

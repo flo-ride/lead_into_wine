@@ -1,4 +1,7 @@
-use crate::features::level_loop::components::Pnj;
+use crate::core::states::{GameState, ShelfState};
+use crate::environment::{LivesText, PlayerLives};
+use crate::features::level_loop::components::{CurrentLevel, CurrentPnjIndex, Pnj};
+use crate::features::level_loop::plugin::level_initialized;
 use crate::features::level_loop::systems::start_pnj_leaving;
 use crate::features::recipes::components::RecipesConfig;
 use crate::features::recipes::plugin::RecipesAssets;
@@ -11,10 +14,14 @@ pub struct AlchemyPlugin;
 
 impl Plugin for AlchemyPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(
-            Update,
-            (handle_pouring, handle_serving_order, update_liquid_visuals),
-        );
+        app.add_systems(Update, (handle_pouring, update_liquid_visuals))
+            .add_systems(
+                Update,
+                handle_serving_order
+                    .run_if(in_state(GameState::Playing))
+                    .run_if(in_state(ShelfState::Closed))
+                    .run_if(level_initialized),
+            );
     }
 }
 
@@ -41,7 +48,10 @@ fn handle_serving_order(
     spatial_query: SpatialQuery,
     pnj_query: Query<(Entity, &Pnj)>,
     mut container_query: Query<(Entity, &mut LiquidContainer)>,
+    mut current_level: ResMut<CurrentLevel>,
     held_query: Query<Entity, With<Held>>,
+    mut lives: ResMut<PlayerLives>,
+    mut lives_ui_query: Query<&mut Text, With<LivesText>>,
 ) {
     if !buttons.just_pressed(MouseButton::Right) {
         return;
@@ -63,6 +73,34 @@ fn handle_serving_order(
         && let Ok((_, mut target_container)) = container_query.get_mut(held_entity)
         && target_container.level > 0
     {
+        // 2. Vérification de la commande
+        let is_correct_order = target_container
+            .content
+            .as_ref()
+            .map_or(false, |content| content == &current_level.customer_order);
+
+        if is_correct_order {
+            info!("Commande correcte ! Le client est satisfait.");
+        } else {
+            // Décrémentation des vies si erreur
+            lives.count = lives.count.saturating_sub(1);
+            warn!("Mauvaise commande ! Vies restantes : {}", lives.count);
+
+            // Mise à jour de l'affichage UI
+            if let Ok(mut text) = lives_ui_query.single_mut() {
+                let full = " ".repeat(lives.count as usize);
+                let empty = "|".repeat((3 - lives.count) as usize);
+                **text = format!("{}{}", full, empty)
+            }
+
+            // (Optionnel) Vérification Game Over
+            if lives.count == 0 {
+                error!("Game Over ! Vous n'avez plus de vies.");
+                // trigger game over logic here
+            }
+        }
+
+        // 3. Vider le récipient
         let doses_to_remove = target_container.level.min(4);
         target_container.level -= doses_to_remove;
 
@@ -70,6 +108,13 @@ fn handle_serving_order(
             target_container.content = None;
         }
 
+        // 4. Faire partir le PNJ
+        current_level.customer_timer.finish();
+        info!(
+            "Timer is finished {}",
+            current_level.customer_timer.is_finished()
+        );
+        info!("Order : {}", current_level.customer_order);
         start_pnj_leaving(&mut commands, pnj_entity);
     }
 }
@@ -82,6 +127,7 @@ fn handle_pouring(
     held_query: Query<Entity, With<Held>>,
     recipes_assets: Option<Res<RecipesAssets>>,
     recipes_configs: Res<Assets<RecipesConfig>>,
+    mut commands: Commands,
 ) {
     if buttons.just_pressed(MouseButton::Right) {
         let Some(held_entity) = held_query.iter().next() else {
@@ -149,7 +195,7 @@ fn update_liquid_visuals(
                 && let Some(content) = &container.content
             {
                 let base_texture = config.beverages.get(content).unwrap().texture.clone();
-                let level = container.level.clamp(1, 4);
+                let level = container.level.div_ceil(2).clamp(1, 4);
                 let tag_name = format!("{base_texture}{level}");
 
                 animation.animation = Animation::tag(&tag_name);
@@ -157,7 +203,8 @@ fn update_liquid_visuals(
                 animation.animation = Animation::tag("Empty");
             }
         } else {
-            let tag_name = match container.level {
+            let visual_stage = container.level.div_ceil(2);
+            let tag_name = match visual_stage {
                 0 => "Empty",
                 1 => "1/5",
                 2 => "2/5",

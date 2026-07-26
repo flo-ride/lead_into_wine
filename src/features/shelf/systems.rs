@@ -1,4 +1,4 @@
-use crate::features::shelf::assets::BackgroundAssets;
+use crate::features::{level_loop::systems::LevelEntity, shelf::assets::BackgroundAssets};
 use crate::physics::GameLayer;
 use avian2d::prelude::*;
 
@@ -21,6 +21,7 @@ pub fn setup_shelf(mut commands: Commands, assets: Res<BackgroundAssets>) {
     // La shelf elle-même, part fermée (à droite)
     commands
         .spawn((
+            LevelEntity,
             AseAnimation {
                 aseprite: assets.front_shelf.clone(),
                 animation: Animation::default(),
@@ -77,6 +78,7 @@ pub fn setup_shelf(mut commands: Commands, assets: Res<BackgroundAssets>) {
     // Bouton pour tirer la shelf
     commands.spawn((
         Button,
+        LevelEntity,
         Node {
             position_type: PositionType::Absolute,
             right: Val::Px(15.0),
