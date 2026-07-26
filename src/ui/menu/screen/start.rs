@@ -55,7 +55,7 @@ fn spawn_title(parent: &mut ChildSpawnerCommands, ui_font: &UiFont) {
                 TextColor(Color::srgb(0.95, 0.85, 0.65)),
             ));
             title.spawn((
-                Text::new("Une aventure de comptoir"),
+                Text::new("The Thirsty Skeleton"),
                 ui_font.text(22.0),
                 TextColor(TEXT_MUTED),
                 Node {
