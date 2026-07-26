@@ -81,9 +81,10 @@ pub fn animate_scroll_entering(
 pub fn start_scroll_exiting(
     mut commands: Commands,
     mut day_ended_events: MessageReader<CustomerArrived>,
+    leaving_pnj: Query<Entity, Added<crate::features::level_loop::components::Leaving>>,
     scroll_query: Query<(Entity, &Transform), (With<Scroll>, Without<ScrollEntering>)>,
 ) {
-    if day_ended_events.read().next().is_none() {
+    if day_ended_events.read().next().is_none() && leaving_pnj.iter().next().is_none() {
         return;
     }
 
