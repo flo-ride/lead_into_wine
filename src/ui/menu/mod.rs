@@ -5,6 +5,10 @@ use crate::ui::UiFont;
 use crate::ui::menu::screen::background::{
     animate_abstract_background, despawn_abstract_background, spawn_abstract_background,
 };
+use crate::ui::menu::screen::credits::{
+    animate_credits_background, despawn_credits_background, despawn_credits_screen,
+    spawn_credits_background, spawn_credits_screen, update_credits_button,
+};
 use crate::ui::menu::screen::playing::{despawn_playing_hud, spawn_playing_hud};
 use crate::ui::menu::screen::start::{
     despawn_start_screen, spawn_start_screen, update_start_menu_buttons,
@@ -18,7 +22,7 @@ impl Plugin for MenuPlugin {
     fn build(&self, app: &mut App) {
         app.init_collection::<UiFont>()
             .add_systems(
-                OnEnter(GameState::Loading),
+                OnEnter(GameState::StartMenu),
                 (spawn_abstract_background, spawn_start_screen),
             )
             .add_systems(
@@ -27,6 +31,19 @@ impl Plugin for MenuPlugin {
             )
             .add_systems(OnEnter(GameState::Playing), spawn_playing_hud)
             .add_systems(OnExit(GameState::Playing), despawn_playing_hud)
+            .add_systems(
+                OnEnter(GameState::Credits),
+                (spawn_credits_background, spawn_credits_screen),
+            )
+            .add_systems(
+                OnExit(GameState::Credits),
+                (despawn_credits_background, despawn_credits_screen),
+            )
+            .add_systems(
+                Update,
+                (animate_credits_background, update_credits_button)
+                    .run_if(in_state(GameState::Credits)),
+            )
             .add_systems(
                 Update,
                 (animate_abstract_background, update_start_menu_buttons)
