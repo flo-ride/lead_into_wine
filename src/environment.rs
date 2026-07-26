@@ -1,6 +1,5 @@
 use crate::alchemy::{LiquidContainer, LiquidVisual};
 
-use crate::core::components::Scroll;
 use crate::core::states::GameState;
 use crate::interaction::Draggable;
 use avian2d::prelude::*;
@@ -40,20 +39,6 @@ fn setup_environment(
             ..default()
         },
         Transform::from_xyz(0.0, 0.0, -10.0),
-    ));
-
-    commands.spawn((
-        Scroll,
-        AseAnimation {
-            aseprite: asset_server.load("models/scroll.aseprite"),
-            animation: Animation::default(),
-        },
-        Sprite::default(),
-        Transform {
-            translation: Vec3::new(-510.0, 190.0, -10.0),
-            scale: Vec3::splat(0.7),
-            ..default()
-        },
     ));
 
     // Invisible Counter (Tavern)
