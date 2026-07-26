@@ -5,6 +5,7 @@ use crate::core::states::GameState;
 use crate::interaction::Draggable;
 use avian2d::prelude::*;
 use bevy::prelude::*;
+use bevy::window::PrimaryWindow;
 use bevy_aseprite_ultra::prelude::*;
 
 pub struct EnvironmentPlugin;
@@ -20,10 +21,13 @@ fn setup_environment(
     asset_server: Res<AssetServer>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
+    window_query: Query<&Window, With<PrimaryWindow>>,
 ) {
     // ==========================================
     // === CUSTOMERS VIEW (X = 0.0) ===
     // ==========================================
+
+    let window = window_query.single().unwrap();
 
     // Background Tavern Image
     commands.spawn((
@@ -31,12 +35,11 @@ fn setup_environment(
             aseprite: asset_server.load("textures/background/front.ase"),
             animation: Animation::default(),
         },
-        Sprite::default(),
-        Transform {
-            translation: Vec3::new(0.0, 0.0, -10.0),
-            scale: Vec3::splat(2.0),
+        Sprite {
+            custom_size: Some(Vec2::new(window.width(), window.height())),
             ..default()
         },
+        Transform::from_xyz(0.0, 0.0, -10.0),
     ));
 
     commands.spawn((
@@ -47,8 +50,8 @@ fn setup_environment(
         },
         Sprite::default(),
         Transform {
-            translation: Vec3::new(-650.0, 220.0, -10.0),
-            scale: Vec3::splat(1.0),
+            translation: Vec3::new(-510.0, 190.0, -10.0),
+            scale: Vec3::splat(0.7),
             ..default()
         },
     ));

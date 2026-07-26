@@ -170,8 +170,8 @@ pub fn spawn_pnj(
                 },
                 Sprite::default(),
                 Transform {
-                    translation: Vec3::new(100.0, -70.0, 0.0),
-                    scale: Vec3::splat(3.5),
+                    translation: Vec3::new(100.0, -70.0, -5.0),
+                    scale: Vec3::splat(1.5),
                     ..default()
                 },
                 Collider::rectangle(80.0, 180.0),

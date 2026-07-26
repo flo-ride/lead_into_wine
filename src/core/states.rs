@@ -8,16 +8,17 @@ pub enum GameState {
     Loading,
     StartMenu,
     Playing,
+    Credits,
     GameOver,
     Victory,
 }
 
 #[derive(SubStates, Default, Debug, Clone, PartialEq, Eq, Hash)]
 #[source(GameState = GameState::Playing)]
-pub enum InGameView {
+pub enum ShelfState {
     #[default]
-    Customers, // View with the clients
-    Alchemy, // View with the bottles and potion making
+    Closed, // à droite, position de repos
+    Open, // tirée vers la gauche
 }
 
 impl GameState {
@@ -39,7 +40,7 @@ pub struct StatePlugin;
 impl Plugin for StatePlugin {
     fn build(&self, app: &mut App) {
         app.init_state::<GameState>()
-            .add_sub_state::<InGameView>()
+            .add_sub_state::<ShelfState>()
             .add_loading_state(
                 LoadingState::new(GameState::Loading).continue_to_state(GameState::initial()),
             );
