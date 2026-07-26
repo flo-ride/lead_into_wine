@@ -80,11 +80,16 @@ fn spawn_first_customer(
 pub fn animate_pnj_wait_indicator(
     time: Res<Time>,
     mut query: Query<(&mut Transform, &mut PnjWaitIndicator)>,
+    mut text_query: Query<(&mut Text2d, &mut PnjWaitText)>,
 ) {
     for (mut transform, mut indicator) in &mut query {
         indicator.timer.tick(time.delta());
         let remaining_ratio = 1.0 - indicator.timer.fraction();
         transform.scale = Vec3::splat(remaining_ratio.max(0.0));
+    }
+    for (mut text, mut wait_text) in &mut text_query {
+        wait_text.timer.tick(time.delta());
+        text.0 = format!("{:.0}", wait_text.timer.remaining_secs().ceil());
     }
 }
 
@@ -92,7 +97,7 @@ pub fn hide_wait_indicator_on_leaving(
     mut commands: Commands,
     leaving_pnj: Query<Entity, Added<Leaving>>,
     children_query: Query<&Children>,
-    indicator_query: Query<Entity, With<PnjWaitIndicator>>,
+    indicator_query: Query<Entity, Or<(With<PnjWaitIndicator>, With<PnjWaitText>)>>,
 ) {
     for pnj_entity in &leaving_pnj {
         let Ok(children) = children_query.get(pnj_entity) else {
@@ -216,6 +221,7 @@ pub fn spawn_pnj(
     mut pending: Query<(Entity, &mut PendingPnjSpawn)>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
+    ui_font: Res<UiFont>,
 ) {
     for (pending_entity, mut pending_spawn) in &mut pending {
         pending_spawn.timer.tick(time.delta());
@@ -275,8 +281,28 @@ pub fn spawn_pnj(
             ))
             .id();
 
+        let wait_text = commands
+            .spawn((
+                PnjWaitText {
+                    timer: Timer::new(current_level.customer_timer.duration(), TimerMode::Once),
+                },
+                Text2d::new(format!(
+                    "{:.0}",
+                    current_level.customer_timer.duration().as_secs_f32()
+                )),
+                ui_font.text(60.0),
+                TextColor(Color::WHITE),
+                Transform {
+                    translation: Vec3::new(offset_x, offset_y - WAIT_INDICATOR_RADIUS - 15.0, 0.6),
+                    scale: Vec3::splat(0.4), // Counter-scale the parent's 2.5 scale (1.0 / 2.5) to keep it crisp
+                    ..default()
+                },
+            ))
+            .id();
+
         commands.entity(pnj_model).add_child(pnj_hitbox);
         commands.entity(pnj_model).add_child(wait_indicator);
+        commands.entity(pnj_model).add_child(wait_text);
     }
 }
 
