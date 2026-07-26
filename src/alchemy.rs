@@ -35,6 +35,8 @@ fn handle_pouring(
     spatial_query: SpatialQuery,
     mut container_query: Query<(Entity, &mut LiquidContainer)>,
     held_query: Query<Entity, With<Held>>,
+    recipes_assets: Option<Res<RecipesAssets>>,
+    recipes_configs: Res<Assets<RecipesConfig>>,
 ) {
     if buttons.just_pressed(MouseButton::Right) {
         let Some(held_entity) = held_query.iter().next() else {
@@ -44,15 +46,46 @@ fn handle_pouring(
         let intersections =
             spatial_query.point_intersections(cursor_pos.0, &SpatialQueryFilter::default());
 
-        let target_entity = intersections.iter().find(|compared| {
-            return **compared != held_entity && container_query.contains(**compared);
-        });
+        let target_entity = intersections
+            .iter()
+            .find(|compared| **compared != held_entity && container_query.contains(**compared));
 
         if let Some(target) = target_entity {
             let combinations = container_query.get_many_mut([held_entity, *target]);
-            if let Ok([mut _held_container, mut target_container]) = combinations {
-                if target_container.1.level < target_container.1.max_doses {
-                    // Add mixing here
+            if let Ok([mut held, mut target]) = combinations {
+                let held_container = &mut held.1;
+                let target_container = &mut target.1;
+
+                if held_container.level > 0
+                    && target_container.level < target_container.max_doses
+                    && let Some(poured_content) = held_container.content.clone()
+                {
+                    // We pour one dose
+                    held_container.level -= 1;
+                    if held_container.level == 0 {
+                        held_container.content = None;
+                    }
+
+                    target_container.level += 1;
+
+                    if let Some(target_content) = target_container.content.clone() {
+                        // Target already had liquid, attempt mixing
+                        if let Some(ra) = &recipes_assets
+                            && let Some(config) = recipes_configs.get(&ra.recipes)
+                        {
+                            let new_content = config
+                                .recipes
+                                .get(&(poured_content.clone(), target_content.clone()))
+                                .or_else(|| config.recipes.get(&(target_content, poured_content)));
+
+                            if let Some(c) = new_content {
+                                target_container.content = Some(c.clone());
+                            }
+                        }
+                    } else {
+                        // Target was empty
+                        target_container.content = Some(poured_content);
+                    }
                 }
             }
         }
@@ -63,26 +96,32 @@ fn update_liquid_visuals(
     recipes_assets: Option<Res<RecipesAssets>>,
     recipes_configs: Res<Assets<RecipesConfig>>,
     mut container_query: Query<(&LiquidContainer, &mut AseAnimation), Changed<LiquidContainer>>,
-    mut visual_query: Query<(
-        &mut Transform,
-        &mut MeshMaterial2d<ColorMaterial>,
-        &LiquidVisual,
-    )>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
     let recipes_config = recipes_assets.and_then(|ra| recipes_configs.get(&ra.recipes));
 
     for (container, mut animation) in container_query.iter_mut() {
-        if let Some(config) = recipes_config
-            && let Some(content) = &container.content
-        {
-            let base_texture = config.beverages.get(content).unwrap().texture.clone();
-            let level = container.level.clamp(1, 4);
-            let tag_name = format!("{base_texture}{level}");
+        if container.is_glass {
+            if let Some(config) = recipes_config
+                && let Some(content) = &container.content
+            {
+                let base_texture = config.beverages.get(content).unwrap().texture.clone();
+                let level = container.level.clamp(1, 4);
+                let tag_name = format!("{base_texture}{level}");
 
-            animation.animation = Animation::tag(&tag_name);
-        } else if container.content.is_none() {
-            animation.animation = Animation::tag("Empty");
+                animation.animation = Animation::tag(&tag_name);
+            } else if container.content.is_none() {
+                animation.animation = Animation::tag("Empty");
+            }
+        } else {
+            let tag_name = match container.level {
+                0 => "Empty",
+                1 => "1/5",
+                2 => "2/5",
+                3 => "3/5",
+                4 => "4/5",
+                _ => "Full",
+            };
+            animation.animation = Animation::tag(tag_name);
         }
     }
 }
