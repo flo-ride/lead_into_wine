@@ -2,6 +2,7 @@ use crate::alchemy::{LiquidContainer, LiquidVisual};
 
 use crate::core::states::GameState;
 use crate::interaction::Draggable;
+use crate::physics::GameLayer;
 use avian2d::prelude::*;
 use bevy::prelude::*;
 use bevy_aseprite_ultra::prelude::*;
@@ -36,6 +37,12 @@ pub struct UiAssets {
 
     #[asset(path = "models/bottles/wine.ase")]
     pub wine_bottle: Handle<Aseprite>,
+
+    #[asset(path = "models/bottles/milk.ase")]
+    pub milk_bottle: Handle<Aseprite>,
+
+    #[asset(path = "models/bottles/unicorn_tears.ase")]
+    pub unicorn_tears_bottle: Handle<Aseprite>,
 }
 
 fn setup_environment(
@@ -78,18 +85,26 @@ fn setup_environment(
         Transform::from_translation(Vec3::new(0.0, -450.0, -1.0)),
         RigidBody::Static,
         Collider::rectangle(3000.0, 400.0), // Top edge is at Y = -250
+        CollisionLayers::new(
+            [GameLayer::Environment],
+            [GameLayer::TavernItem, GameLayer::ShelfItem],
+        ),
     ));
 
     // Invisible Walls to prevent items from falling off-screen (Tavern)
+    // Left wall
     commands.spawn((
-        Transform::from_translation(Vec3::new(-1000.0, 0.0, -1.0)),
+        Transform::from_translation(Vec3::new(-650.0, 0.0, -1.0)),
         RigidBody::Static,
         Collider::rectangle(100.0, 2000.0),
+        CollisionLayers::new([GameLayer::Environment], [GameLayer::TavernItem]),
     ));
+    // Right wall
     commands.spawn((
-        Transform::from_translation(Vec3::new(1000.0, 0.0, -1.0)),
+        Transform::from_translation(Vec3::new(650.0, 0.0, -1.0)),
         RigidBody::Static,
         Collider::rectangle(100.0, 2000.0),
+        CollisionLayers::new([GameLayer::Environment], [GameLayer::TavernItem]),
     ));
 
     let mug = commands
@@ -99,7 +114,7 @@ fn setup_environment(
                 animation: Animation::default(),
             },
             Transform {
-                translation: Vec3::new(0.0, 0.0, 2.0),
+                translation: Vec3::new(0.0, -175.0, 1.0),
                 scale: Vec3::splat(2.0),
                 ..default()
             },
@@ -107,6 +122,10 @@ fn setup_environment(
             RigidBody::Dynamic,
             LockedAxes::ROTATION_LOCKED,
             Collider::rectangle(100.0, 150.0),
+            CollisionLayers::new(
+                [GameLayer::TavernItem],
+                [GameLayer::Environment, GameLayer::TavernItem],
+            ),
             Draggable,
             LiquidContainer {
                 content: None,
@@ -131,13 +150,14 @@ fn setup_environment(
         .id();
     commands.entity(mug).add_child(glass_liquid);
 
+    // Wine Bottle
     commands.spawn((
         AseAnimation {
             aseprite: ui_assets.wine_bottle.clone(),
             animation: Animation::tag("Full"),
         },
         Transform {
-            translation: Vec3::new(-200.0, 0.0, 2.0),
+            translation: Vec3::new(965.0, 160.0, 3.0),
             scale: Vec3::splat(2.0),
             ..default()
         },
@@ -145,6 +165,14 @@ fn setup_environment(
         RigidBody::Dynamic,
         LockedAxes::ROTATION_LOCKED,
         Collider::rectangle(60.0, 180.0), // Approximated collider size for a bottle
+        CollisionLayers::new(
+            [GameLayer::ShelfItem],
+            [
+                GameLayer::Environment,
+                GameLayer::ShelfItem,
+                GameLayer::ShelfStructure,
+            ],
+        ),
         Draggable,
         LiquidContainer {
             content: Some("wine".to_string()),
@@ -177,6 +205,69 @@ fn setup_environment(
             level: 0,
             max_doses: usize::MAX,
             is_glass: true,
+        },
+    ));
+    // Milk Bottle
+    commands.spawn((
+        AseAnimation {
+            aseprite: ui_assets.milk_bottle.clone(),
+            animation: Animation::tag("Full"),
+        },
+        Transform {
+            translation: Vec3::new(765.0, 160.0, 3.0), // À gauche du vin
+            scale: Vec3::splat(2.0),
+            ..default()
+        },
+        Sprite::default(),
+        RigidBody::Dynamic,
+        LockedAxes::ROTATION_LOCKED,
+        Collider::rectangle(60.0, 180.0),
+        CollisionLayers::new(
+            [GameLayer::ShelfItem],
+            [
+                GameLayer::Environment,
+                GameLayer::ShelfItem,
+                GameLayer::ShelfStructure,
+            ],
+        ),
+        Draggable,
+        LiquidContainer {
+            content: Some("milk".to_string()),
+            level: 5,
+            max_doses: 5,
+            is_glass: false,
+        },
+    ));
+
+    // Unicorn Tears Bottle
+    commands.spawn((
+        AseAnimation {
+            aseprite: ui_assets.unicorn_tears_bottle.clone(),
+            animation: Animation::tag("Full"),
+        },
+        Transform {
+            translation: Vec3::new(1165.0, 160.0, 3.0), // À droite du vin
+            scale: Vec3::splat(2.0),
+            ..default()
+        },
+        Sprite::default(),
+        RigidBody::Dynamic,
+        LockedAxes::ROTATION_LOCKED,
+        Collider::rectangle(60.0, 180.0),
+        CollisionLayers::new(
+            [GameLayer::ShelfItem],
+            [
+                GameLayer::Environment,
+                GameLayer::ShelfItem,
+                GameLayer::ShelfStructure,
+            ],
+        ),
+        Draggable,
+        LiquidContainer {
+            content: Some("unicorn_tear".to_string()),
+            level: 5,
+            max_doses: 5,
+            is_glass: false,
         },
     ));
 }
