@@ -16,13 +16,13 @@
 
         // Recipes
         "beer_butter": (name: "Butterbeer", texture: "Strong Beer"),
-        "apple_wine": (name: "Apple Wine", texture: "StagnantWater"),
-        "strong_wine": (name: "Strong Wine", texture: "StagnantWater"),
-        "love_potion": (name: "Love Potion", texture: "StagnantWater"),
+        "apple_wine": (name: "Apple Wine", texture: "AppleWine"),
+        "strong_wine": (name: "Strong Wine", texture: "StrongWine"),
+        "love_potion": (name: "Love Potion", texture: "LovePotion"),
         // "invisibility_potion": (name: "Invisibility Potion", texture: ""),
         // "luck_potion": (name: "Luck Potion", texture: ""),
         // "strength_elixir": (name: "Strength Elixir", texture: ""),
-        "hopped_cider": (name: "Hopped Cider", texture: "StagnantWater"),
+        "hopped_cider": (name: "Hopped Cider", texture: "HoppedCider"),
         // "strong_beer": (name: "Strong Beer", texture: "Strong Beer"),
         // "strong_apple": (name: "Strong Apple", texture: ""),
         // "healing_elixir": (name: "Healing Elixir", texture: ""),
