@@ -23,9 +23,9 @@ pub struct LiquidContainer {
 }
 
 #[derive(Component)]
+#[allow(dead_code)]
 pub struct LiquidVisual {
     pub container_height: f32,
-    #[allow(dead_code)]
     pub max_width: f32,
 }
 
@@ -50,7 +50,7 @@ fn handle_pouring(
 
         if let Some(target) = target_entity {
             let combinations = container_query.get_many_mut([held_entity, *target]);
-            if let Ok([mut held_container, mut target_container]) = combinations {
+            if let Ok([mut _held_container, mut target_container]) = combinations {
                 if target_container.1.level < target_container.1.max_doses {
                     // Add mixing here
                 }

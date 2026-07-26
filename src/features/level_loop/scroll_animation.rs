@@ -1,7 +1,10 @@
 use bevy::prelude::*;
 use bevy_aseprite_ultra::prelude::{Animation, AseAnimation};
 
-use crate::{core::components::Scroll, features::level_loop::components::CustomerArrived};
+use crate::{
+    core::components::Scroll, environment::UiAssets,
+    features::level_loop::components::CustomerArrived,
+};
 // + ton import AseAnimation / Animation existant
 
 #[derive(Component)]
@@ -27,7 +30,7 @@ const SCROLL_OFFSET_X: f32 = 150.0; // départ plus à gauche, glisse vers sa po
 pub fn spawn_scroll(
     mut commands: Commands,
     mut arrived_events: MessageReader<CustomerArrived>,
-    asset_server: Res<AssetServer>,
+    scroll_assets: Res<UiAssets>,
 ) {
     for _ in arrived_events.read() {
         let start_x = SCROLL_REST_X - SCROLL_OFFSET_X;
@@ -35,7 +38,7 @@ pub fn spawn_scroll(
         commands.spawn((
             Scroll,
             AseAnimation {
-                aseprite: asset_server.load("models/scroll.aseprite"),
+                aseprite: scroll_assets.scroll.clone(),
                 animation: Animation::default(),
             },
             Sprite {

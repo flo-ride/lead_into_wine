@@ -35,17 +35,13 @@ pub struct UiAssets {
 
 fn setup_environment(
     mut commands: Commands,
-    asset_server: Res<AssetServer>,
     ui_assets: Res<UiAssets>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
-    window_query: Query<&Window, With<PrimaryWindow>>,
 ) {
     // ==========================================
     // === CUSTOMERS VIEW (X = 0.0) ===
     // ==========================================
-
-    let window = window_query.single().unwrap();
 
     // Background Tavern Image
     commands.spawn((
@@ -58,20 +54,6 @@ fn setup_environment(
             ..default()
         },
         Transform::from_xyz(0.0, 0.0, -10.0),
-    ));
-
-    commands.spawn((
-        Scroll,
-        AseAnimation {
-            aseprite: ui_assets.scroll.clone(),
-            animation: Animation::default(),
-        },
-        Sprite::default(),
-        Transform {
-            translation: Vec3::new(-510.0, 190.0, -10.0),
-            scale: Vec3::splat(0.7),
-            ..default()
-        },
     ));
 
     // Invisible Counter (Tavern)
