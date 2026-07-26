@@ -21,6 +21,14 @@ pub enum ShelfState {
     Open, // tirée vers la gauche
 }
 
+#[derive(SubStates, Default, Debug, Clone, PartialEq, Eq, Hash)]
+#[source(GameState = GameState::Playing)]
+pub enum BookState {
+    #[default]
+    Closed, // en bas, caché
+    Open, // tiré vers le haut, visible
+}
+
 impl GameState {
     pub fn initial() -> Self {
         #[cfg(feature = "dev")]
@@ -41,6 +49,7 @@ impl Plugin for StatePlugin {
     fn build(&self, app: &mut App) {
         app.init_state::<GameState>()
             .add_sub_state::<ShelfState>()
+            .add_sub_state::<BookState>()
             .add_loading_state(
                 LoadingState::new(GameState::Loading).continue_to_state(GameState::initial()),
             );

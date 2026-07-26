@@ -8,6 +8,7 @@ mod physics;
 mod ui;
 
 use bevy_aseprite_ultra::AsepriteUltraPlugin;
+use features::book::plugin::BookPlugin;
 use features::level_loop::plugin::LevelLoopPlugin;
 use features::personna::plugin::PersonnaPlugin;
 use features::recipes::plugin::RecipesPlugin;
@@ -48,6 +49,7 @@ pub fn main() {
         .add_plugins(RecipesPlugin)
         .add_plugins(ui::MenuPlugin)
         .add_plugins(ShelfPlugin)
+        .add_plugins(BookPlugin)
         .add_plugins(environment::EnvironmentPlugin)
         .add_plugins(AsepriteUltraPlugin)
         .run();
