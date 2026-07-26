@@ -195,7 +195,7 @@ fn update_liquid_visuals(
                 && let Some(content) = &container.content
             {
                 let base_texture = config.beverages.get(content).unwrap().texture.clone();
-                let level = container.level.div_ceil(2).clamp(1, 4);
+                let level = container.level.clamp(1, 4);
                 let tag_name = format!("{base_texture}{level}");
 
                 animation.animation = Animation::tag(&tag_name);

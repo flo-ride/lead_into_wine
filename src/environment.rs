@@ -72,6 +72,12 @@ pub struct UiAssets {
 
     #[asset(path = "models/bottles/unicorn_tears.ase")]
     pub unicorn_tears_bottle: Handle<Aseprite>,
+
+    #[asset(path = "models/bottles/cider.ase")]
+    pub cider_bottle: Handle<Aseprite>,
+
+    #[asset(path = "models/bottles/beer.ase")]
+    pub beer_bottle: Handle<Aseprite>,
 }
 
 /// Fonction utilitaire pour instancier une nouvelle bouteille
@@ -162,6 +168,8 @@ pub fn spawn_additional_bottles_on_new_day(
         (ui_assets.milk_bottle.clone(), "milk"),
         (ui_assets.wine_bottle.clone(), "wine"),
         (ui_assets.unicorn_tears_bottle.clone(), "unicorn_tear"),
+        (ui_assets.cider_bottle.clone(), "cider"),
+        (ui_assets.beer_bottle.clone(), "beer"),
     ];
 
     for (aseprite, content) in bottle_types {
@@ -325,12 +333,14 @@ fn setup_environment(
         },
     ));
 
-    // Spawn initial des 3 bouteilles au démarrage du jeu
-    let initial_positions = [765.0, 965.0, 1165.0];
+    // Spawn initial des 5 bouteilles au démarrage du jeu
+    let initial_positions = [765.0, 865.0, 965.0, 1065.0, 1165.0];
     let initial_bottles = [
         (ui_assets.milk_bottle.clone(), "milk"),
         (ui_assets.wine_bottle.clone(), "wine"),
         (ui_assets.unicorn_tears_bottle.clone(), "unicorn_tear"),
+        (ui_assets.cider_bottle.clone(), "cider"),
+        (ui_assets.beer_bottle.clone(), "beer"),
     ];
 
     for (i, (aseprite, content)) in initial_bottles.into_iter().enumerate() {

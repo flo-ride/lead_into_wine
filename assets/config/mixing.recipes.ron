@@ -15,7 +15,7 @@
         // "mandrake_root": (name: "Mandrake Root", texture: ""),
 
         // Recipes
-        "beer_butter": (name: "Butterbeer", texture: "StagnantWater"),
+        "beer_butter": (name: "Butterbeer", texture: "Strong Beer"),
         "apple_wine": (name: "Apple Wine", texture: "StagnantWater"),
         "strong_wine": (name: "Strong Wine", texture: "StagnantWater"),
         "love_potion": (name: "Love Potion", texture: "StagnantWater"),
