@@ -240,7 +240,7 @@ pub fn spawn_pnj(
                 },
                 Sprite::default(),
                 Transform {
-                    translation: Vec3::new(100.0, -70.0, -5.0),
+                    translation: Vec3::new(100.0, -70.0, -2.0),
                     scale: Vec3::splat(2.5),
                     ..default()
                 },
