@@ -30,6 +30,9 @@ pub struct UiAssets {
 
     #[asset(path = "models/mug/cut_mug.ase")]
     pub mug: Handle<Aseprite>,
+
+    #[asset(path = "models/bottles/wine.ase")]
+    pub wine_bottle: Handle<Aseprite>,
 }
 
 fn setup_environment(
@@ -112,4 +115,27 @@ fn setup_environment(
         ))
         .id();
     commands.entity(mug).add_child(glass_liquid);
+
+    commands.spawn((
+        AseAnimation {
+            aseprite: ui_assets.wine_bottle.clone(),
+            animation: Animation::tag("Full"),
+        },
+        Transform {
+            translation: Vec3::new(-200.0, 0.0, 2.0),
+            scale: Vec3::splat(2.0),
+            ..default()
+        },
+        Sprite::default(),
+        RigidBody::Dynamic,
+        LockedAxes::ROTATION_LOCKED,
+        Collider::rectangle(60.0, 180.0), // Approximated collider size for a bottle
+        Draggable,
+        LiquidContainer {
+            content: Some("wine".to_string()),
+            level: 5,
+            max_doses: 5,
+            is_glass: false,
+        },
+    ));
 }
