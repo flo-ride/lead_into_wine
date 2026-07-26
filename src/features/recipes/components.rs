@@ -9,7 +9,6 @@ pub struct ResultTypes {
 
 #[derive(Debug, Clone, Serialize, Deserialize, Asset, TypePath)]
 pub struct RecipesConfig {
-    pub ingredients: Vec<String>,
-    pub result_types: std::collections::HashMap<String, ResultTypes>,
+    pub beverages: std::collections::HashMap<String, ResultTypes>,
     pub recipes: std::collections::HashMap<(String, String), String>,
 }
