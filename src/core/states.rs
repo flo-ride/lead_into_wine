@@ -8,6 +8,7 @@ pub enum GameState {
     Loading,
     StartMenu,
     Playing,
+    Credits,
     GameOver,
     Victory,
 }
