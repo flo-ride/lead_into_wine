@@ -2,7 +2,7 @@ use crate::features::shelf::assets::BackgroundAssets;
 
 use crate::core::states::ShelfState;
 
-use bevy::{prelude::*, window::PrimaryWindow};
+use bevy::prelude::*;
 use bevy_aseprite_ultra::prelude::{Animation, AseAnimation};
 
 #[derive(Component)]
@@ -15,13 +15,7 @@ const SHELF_OPEN_X: f32 = 0.0; // position tirée, vers la gauche
 const SHELF_CLOSED_X: f32 = 965.0; // position de repos, à droite
 const SHELF_MOVE_SPEED: f32 = 5.0;
 
-pub fn setup_shelf(
-    mut commands: Commands,
-    assets: Res<BackgroundAssets>,
-    window_query: Query<&Window, With<PrimaryWindow>>,
-) {
-    let window = window_query.single().unwrap();
-
+pub fn setup_shelf(mut commands: Commands, assets: Res<BackgroundAssets>) {
     // La shelf elle-même, part fermée (à droite)
     commands.spawn((
         AseAnimation {
@@ -29,7 +23,7 @@ pub fn setup_shelf(
             animation: Animation::default(),
         },
         Sprite {
-            custom_size: Some(Vec2::new(window.width(), window.height())),
+            custom_size: Some(Vec2::new(1280., 720.)),
             ..default()
         },
         Transform::from_xyz(SHELF_CLOSED_X, 0.0, 0.0),

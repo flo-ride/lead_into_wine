@@ -1,10 +1,9 @@
 (
     races: [
         "orc",
-        "elf",
-        "dwarf",
         "human",
         "wizard",
+        "goblin",
     ],
 
     // per-race tuning knobs consumed by the formula above:
@@ -78,46 +77,6 @@
                 "Tiny goblin needs {order}.",
                 "{name} paying. Probably.",
                 "No poison this time, please.",
-            ],
-            preferences: [],
-        ),
-        (
-            name: "Eloria",
-            race: "elf",
-            greetings: [
-                "May I have {order}?",
-                "Patience is a virtue... mostly.",
-                "I've seen trees grow faster.",
-            ],
-            preferences: [],
-        ),
-        (
-            name: "Aelar",
-            race: "elf",
-            greetings: [
-                "A fine {order}, if you would.",
-                "Perfection takes time, I suppose.",
-                "I can hear my stomach composing poetry.",
-            ],
-            preferences: [],
-        ),
-        (
-            name: "Borin",
-            race: "dwarf",
-            greetings: [
-                "One {order}, nice and hearty!",
-                "If it's cold, I'm complaining.",
-                "Good things come to those who wait... with ale.",
-            ],
-            preferences: [],
-        ),
-        (
-            name: "Grum",
-            race: "dwarf",
-            greetings: [
-                "Make me {order}.",
-                "I've mined rocks softer than this wait.",
-                "I'll forgive you if it's delicious.",
             ],
             preferences: [],
         ),

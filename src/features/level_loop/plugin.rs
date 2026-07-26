@@ -1,5 +1,8 @@
 use crate::core::states::GameState;
 use crate::features::level_loop::components::*;
+use crate::features::level_loop::scroll_animation::{
+    animate_scroll_entering, animate_scroll_exiting, spawn_scroll, start_scroll_exiting,
+};
 use crate::features::level_loop::systems::*;
 use bevy::prelude::*;
 
@@ -23,13 +26,27 @@ impl Plugin for LevelLoopPlugin {
                 Update,
                 (
                     level_loop_system,
-                    despawn_pnj,
+                    queue_pnj_spawn,
                     spawn_pnj,
                     animate_pnj_wait_indicator,
                     select_recipe,
                     write_customer_text,
                     hide_wait_indicator_on_leaving,
+                    despawn_pnj,
+
                     pnj_departure_system,
+                )
+                    .chain()
+                    .run_if(in_state(GameState::Playing))
+                    .run_if(level_initialized),
+            )
+            .add_systems(
+                Update,
+                (
+                    animate_scroll_entering,
+                    spawn_scroll,
+                    start_scroll_exiting,
+                    animate_scroll_exiting,
                 )
                     .chain()
                     .run_if(in_state(GameState::Playing))

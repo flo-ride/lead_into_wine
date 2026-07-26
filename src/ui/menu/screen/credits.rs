@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use rand::{Rng, RngExt};
+use rand::RngExt;
 
 use crate::core::states::GameState;
 use crate::ui::UiFont;
