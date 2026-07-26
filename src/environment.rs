@@ -138,4 +138,30 @@ fn setup_environment(
             is_glass: false,
         },
     ));
+
+    commands.spawn((
+        Transform {
+            translation: Vec3::new(570.0, -280.0, 10.0),
+            ..default()
+        },
+        #[cfg(feature = "dev")]
+        Sprite {
+            color: Color::srgba(1.0, 0.2, 0.2, 0.5),
+            custom_size: Some(Vec2::new(150.0, 180.0)), // pour visualiser la vraie taille du collider
+            ..default()
+        },
+        #[cfg(not(feature = "dev"))]
+        Sprite {
+            color: Color::NONE,
+            custom_size: Some(Vec2::new(100.0, 180.0)),
+            ..default()
+        },
+        Collider::rectangle(150.0, 180.0),
+        LiquidContainer {
+            content: Some("bin".to_string()),
+            level: 0,
+            max_doses: usize::MAX,
+            is_glass: true,
+        },
+    ));
 }
