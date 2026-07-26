@@ -1,3 +1,5 @@
+use crate::features::level_loop::components::Pnj;
+use crate::features::level_loop::systems::start_pnj_leaving;
 use crate::features::recipes::components::RecipesConfig;
 use crate::features::recipes::plugin::RecipesAssets;
 use crate::interaction::{CursorWorldPos, Held};
@@ -9,7 +11,10 @@ pub struct AlchemyPlugin;
 
 impl Plugin for AlchemyPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, (handle_pouring, update_liquid_visuals));
+        app.add_systems(
+            Update,
+            (handle_pouring, handle_serving_order, update_liquid_visuals),
+        );
     }
 }
 
@@ -27,6 +32,46 @@ pub struct LiquidContainer {
 pub struct LiquidVisual {
     pub container_height: f32,
     pub max_width: f32,
+}
+
+fn handle_serving_order(
+    mut commands: Commands,
+    buttons: Res<ButtonInput<MouseButton>>,
+    cursor_pos: Res<CursorWorldPos>,
+    spatial_query: SpatialQuery,
+    pnj_query: Query<(Entity, &Pnj)>,
+    mut container_query: Query<(Entity, &mut LiquidContainer)>,
+    held_query: Query<Entity, With<Held>>,
+) {
+    if !buttons.just_pressed(MouseButton::Right) {
+        return;
+    }
+
+    let Some(held_entity) = held_query.iter().next() else {
+        return;
+    };
+
+    let intersections =
+        spatial_query.point_intersections(cursor_pos.0, &SpatialQueryFilter::default());
+
+    // 1. On cherche si le curseur pointe sur un PNJ
+    let pnj_target = intersections
+        .iter()
+        .find_map(|&entity| pnj_query.get(entity).ok().map(|_| entity));
+
+    if let Some(pnj_entity) = pnj_target
+        && let Ok((_, mut target_container)) = container_query.get_mut(held_entity)
+        && target_container.level > 0
+    {
+        let doses_to_remove = target_container.level.min(4);
+        target_container.level -= doses_to_remove;
+
+        if target_container.level == 0 {
+            target_container.content = None;
+        }
+
+        start_pnj_leaving(&mut commands, pnj_entity);
+    }
 }
 
 fn handle_pouring(
@@ -55,7 +100,6 @@ fn handle_pouring(
             if let Ok([mut held, mut target]) = combinations {
                 let held_container = &mut held.1;
                 let target_container = &mut target.1;
-
                 if held_container.level > 0
                     && target_container.level < target_container.max_doses
                     && let Some(poured_content) = held_container.content.clone()
