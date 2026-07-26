@@ -8,6 +8,17 @@ use bevy_aseprite_ultra::prelude::{Animation, AseAnimation};
 use rand::seq::{IndexedRandom, IteratorRandom};
 use std::time::Duration;
 
+const WAIT_INDICATOR_RADIUS: f32 = 12.0;
+
+fn wait_indicator_offset(texture: &str) -> (f32, f32) {
+    match texture {
+        "orc.aseprite" => (0.0, 70.0),
+        "goblin.aseprite" => (0.0, 70.0),
+        "wizard.aseprite" => (0.0, 60.0),
+        "warrior.aseprite" => (-5.0, 60.0),
+        _ => (0.0, 50.0),
+    }
+
 const PNJ_ARRIVAL_COOLDOWN_SECS: f32 = 0.6;
 
 /// Marqueur temporaire : un PNJ "en attente" avant son apparition réelle.
@@ -55,6 +66,35 @@ fn spawn_first_customer(
     info!("Customer {} ({}) arrived!", customer.name, customer.race);
     arrived_events.write(CustomerArrived { index: 0 });
     pnj.0 = 1;
+}
+
+pub fn animate_pnj_wait_indicator(
+    time: Res<Time>,
+    mut query: Query<(&mut Transform, &mut PnjWaitIndicator)>,
+) {
+    for (mut transform, mut indicator) in &mut query {
+        indicator.timer.tick(time.delta());
+        let remaining_ratio = 1.0 - indicator.timer.fraction();
+        transform.scale = Vec3::splat(remaining_ratio.max(0.0));
+    }
+}
+
+pub fn hide_wait_indicator_on_leaving(
+    mut commands: Commands,
+    leaving_pnj: Query<Entity, Added<Leaving>>,
+    children_query: Query<&Children>,
+    indicator_query: Query<Entity, With<PnjWaitIndicator>>,
+) {
+    for pnj_entity in &leaving_pnj {
+        let Ok(children) = children_query.get(pnj_entity) else {
+            continue;
+        };
+        for &child in children {
+            if indicator_query.contains(child) {
+                commands.entity(child).despawn();
+            }
+        }
+    }
 }
 
 pub fn init_level_loop(
@@ -188,6 +228,7 @@ pub fn spawn_pnj(
             .expect("Config should be loaded");
 
         let texture = config.texture_for(current_pnj);
+        let (offset_x, offset_y) = wait_indicator_offset(texture);
 
         let pnj_model = commands
             .spawn((
@@ -214,7 +255,19 @@ pub fn spawn_pnj(
             ))
             .id();
 
+        let wait_indicator = commands
+            .spawn((
+                PnjWaitIndicator {
+                    timer: Timer::new(current_level.customer_timer.duration(), TimerMode::Once),
+                },
+                Mesh2d(meshes.add(Circle::new(WAIT_INDICATOR_RADIUS))),
+                MeshMaterial2d(materials.add(Color::srgba(0.95, 0.85, 0.65, 0.9))),
+                Transform::from_translation(Vec3::new(offset_x, offset_y, 0.5)),
+            ))
+            .id();
+
         commands.entity(pnj_model).add_child(pnj_hitbox);
+        commands.entity(pnj_model).add_child(wait_indicator);
     }
 }
 

@@ -17,6 +17,11 @@ pub struct CurrentLevel {
 #[derive(Resource)]
 pub struct CurrentPnjIndex(pub usize);
 
+#[derive(Component)]
+pub struct PnjWaitIndicator {
+    pub timer: Timer,
+}
+
 /// Marque une entité comme étant un pnj client actuellement en jeu.
 #[derive(Component)]
 pub struct Pnj;
