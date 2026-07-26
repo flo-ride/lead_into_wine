@@ -29,7 +29,7 @@ pub fn setup_shelf(
             animation: Animation::default(),
         },
         Sprite {
-            custom_size: Some(Vec2::new(window.width(), window.height())),
+            custom_size: Some(Vec2::new(1280., 720.)),
             ..default()
         },
         Transform::from_xyz(SHELF_CLOSED_X, 0.0, 0.0),

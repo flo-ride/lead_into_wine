@@ -54,5 +54,15 @@ pub fn main() {
 }
 
 fn setup_camera(mut commands: Commands) {
-    commands.spawn((Camera2d, core::components::MainCamera));
+    commands.spawn((
+        Camera2d,
+        core::components::MainCamera,
+        Projection::Orthographic(OrthographicProjection {
+            scaling_mode: bevy::camera::ScalingMode::Fixed {
+                width: 1280.0,
+                height: 720.0,
+            },
+            ..OrthographicProjection::default_2d()
+        }),
+    ));
 }
