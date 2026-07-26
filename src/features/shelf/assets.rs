@@ -4,6 +4,6 @@ use bevy_asset_loader::prelude::*;
 
 #[derive(AssetCollection, Resource)]
 pub struct BackgroundAssets {
-    #[asset(path = "textures/background/front_shelf.ase")]
+    #[asset(path = "textures/background/tavern_shelf.aseprite")]
     pub front_shelf: Handle<Aseprite>,
 }

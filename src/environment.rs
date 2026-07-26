@@ -22,8 +22,11 @@ impl Plugin for EnvironmentPlugin {
 
 #[derive(AssetCollection, Resource)]
 pub struct UiAssets {
-    #[asset(path = "textures/background/front.ase")]
+    #[asset(path = "textures/background/tavern_background.aseprite")]
     pub background: Handle<Aseprite>,
+
+    #[asset(path = "textures/background/tavern_foreground.aseprite")]
+    pub foreground: Handle<Aseprite>,
 
     #[asset(path = "models/scroll.aseprite")]
     pub scroll: Handle<Aseprite>,
@@ -53,6 +56,18 @@ fn setup_environment(
             ..default()
         },
         Transform::from_xyz(0.0, 0.0, -10.0),
+    ));
+
+    commands.spawn((
+        AseAnimation {
+            aseprite: ui_assets.foreground.clone(),
+            animation: Animation::default(),
+        },
+        Sprite {
+            custom_size: Some(Vec2::new(1280., 720.)),
+            ..default()
+        },
+        Transform::from_xyz(0.0, 0.0, -1.0),
     ));
 
     // Invisible Counter (Tavern)
