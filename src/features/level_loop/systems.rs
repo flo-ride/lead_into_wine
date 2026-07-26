@@ -18,6 +18,7 @@ fn wait_indicator_offset(texture: &str) -> (f32, f32) {
         "warrior.aseprite" => (-5.0, 60.0),
         _ => (0.0, 50.0),
     }
+}
 
 const PNJ_ARRIVAL_COOLDOWN_SECS: f32 = 0.6;
 

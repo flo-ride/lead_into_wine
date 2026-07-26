@@ -33,7 +33,6 @@ impl Plugin for LevelLoopPlugin {
                     write_customer_text,
                     hide_wait_indicator_on_leaving,
                     despawn_pnj,
-
                     pnj_departure_system,
                 )
                     .chain()
