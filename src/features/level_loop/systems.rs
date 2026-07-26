@@ -10,7 +10,7 @@ use std::time::Duration;
 
 fn get_day_config(assets: Res<Assets<PersonnaConfig>>, day: u32) -> CurrentLevel {
     let customer_count = 3 + (day as usize);
-    let customer_delay = 5u64.saturating_sub(day as u64 / 4).max(2) / 2;
+    let customer_delay = 5u64.saturating_sub(day as u64 / 4).max(2) * 4;
     let day_duration = Duration::from_secs(customer_delay * customer_count as u64 + 3);
 
     let config = assets
