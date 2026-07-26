@@ -62,12 +62,12 @@ pub fn handle_day_transition_cooldown(
 }
 
 fn get_day_config(assets: Res<Assets<PersonnaConfig>>, day: u32) -> CurrentLevel {
-    const CUSTOMER_DELAY_START_SECS: u64 = 3; // jour 1 : large marge, le temps d'apprendre
+    const CUSTOMER_DELAY_START_SECS: u64 = 12; // jour 1 : large marge, le temps d'apprendre
     const CUSTOMER_DELAY_FLOOR_SECS: u64 = 4; // plancher : légèrement sous le temps d'un joueur rapide (20s), pour forcer la pression sans devenir impossible
-    const CUSTOMER_DELAY_DECAY_PER_DAY: u64 = 2; // le délai baisse de 2s par jour
-    const DAY_BUFFER_SECS: u64 = 0; // marge en fin de journée pour finir le dernier client
+    const CUSTOMER_DELAY_DECAY_PER_DAY: u64 = 1; // le délai baisse de 2s par jour
+    const DAY_BUFFER_SECS: u64 = 10; // marge en fin de journée pour finir le dernier client
 
-    let customer_count = 1 + (day as usize);
+    let customer_count = (day as usize).min(3);
     let customer_delay = CUSTOMER_DELAY_START_SECS
         .saturating_sub(day as u64 * CUSTOMER_DELAY_DECAY_PER_DAY)
         .max(CUSTOMER_DELAY_FLOOR_SECS);
