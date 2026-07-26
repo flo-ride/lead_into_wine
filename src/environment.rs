@@ -72,7 +72,7 @@ fn setup_environment(
         Collider::rectangle(100.0, 2000.0),
     ));
 
-    // A Glass on the counter (Using cut_mug.ase)
+    // A Cup on the counter (Using cut_mug.ase)
     let glass_entity = commands
         .spawn((
             AseAnimation {
@@ -90,9 +90,9 @@ fn setup_environment(
             Collider::rectangle(100.0, 150.0), // Avian2d mettra cette hitbox à l'échelle (x3) automatiquement
             Draggable,
             LiquidContainer {
-                contents: vec![],
+                content: None,
+                level: 0,
                 max_doses: 4,
-                base_color: Color::NONE,
                 is_glass: true,
             },
         ))
@@ -155,9 +155,9 @@ fn setup_environment(
             Collider::rectangle(80.0, 180.0),
             Draggable,
             LiquidContainer {
-                contents: vec!["Wine".to_string(); 5],
+                content: Some("Wine".to_string()),
+                level: 5,
                 max_doses: 5,
-                base_color: Color::srgb(0.9, 0.1, 0.1),
                 is_glass: false,
             },
         ))
@@ -190,9 +190,9 @@ fn setup_environment(
             Collider::rectangle(80.0, 180.0),
             Draggable,
             LiquidContainer {
-                contents: vec!["Unicorn Tear".to_string(); 5],
+                content: Some("Unicorn Tear".to_string()),
+                level: 5,
                 max_doses: 5,
-                base_color: Color::srgb(0.1, 0.1, 0.9),
                 is_glass: false,
             },
         ))
@@ -225,9 +225,9 @@ fn setup_environment(
             Collider::rectangle(80.0, 180.0),
             Draggable,
             LiquidContainer {
-                contents: vec!["Mandrake Root".to_string(); 5],
+                content: Some("Mandrake Root".to_string()),
+                level: 5,
                 max_doses: 5,
-                base_color: Color::srgb(0.1, 0.9, 0.1),
                 is_glass: false,
             },
         ))

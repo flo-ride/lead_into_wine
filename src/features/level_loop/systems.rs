@@ -204,7 +204,7 @@ pub fn select_recipe(
         let mut rng = rand::rng();
 
         let recipe_id = config.recipes.values().choose(&mut rng).unwrap();
-        let recipe = config.result_types.get(recipe_id).unwrap().name.clone();
+        let recipe = config.beverages.get(recipe_id).unwrap().name.clone();
         current_level.customer_order = recipe.to_string();
     }
 }

@@ -15,9 +15,9 @@ impl Plugin for AlchemyPlugin {
 
 #[derive(Component, Clone)]
 pub struct LiquidContainer {
-    pub contents: Vec<String>, // List of ingredients currently inside
+    pub content: Option<String>,
+    pub level: usize,
     pub max_doses: usize,
-    pub base_color: Color, // Used mainly for raw bottles
     #[allow(dead_code)]
     pub is_glass: bool,
 }
@@ -41,77 +41,28 @@ fn handle_pouring(
             return;
         };
 
-        let filter = SpatialQueryFilter::default();
-        let intersections = spatial_query.point_intersections(cursor_pos.0, &filter);
+        let intersections =
+            spatial_query.point_intersections(cursor_pos.0, &SpatialQueryFilter::default());
 
-        let mut target_entity = None;
-        for entity in intersections {
-            if entity != held_entity && container_query.contains(entity) {
-                target_entity = Some(entity);
-                break;
-            }
-        }
+        let target_entity = intersections.iter().find(|compared| {
+            return **compared != held_entity && container_query.contains(**compared);
+        });
 
         if let Some(target) = target_entity {
-            let combinations = container_query.get_many_mut([held_entity, target]);
+            let combinations = container_query.get_many_mut([held_entity, *target]);
             if let Ok([mut held_container, mut target_container]) = combinations {
-                if !held_container.1.contents.is_empty()
-                    && target_container.1.contents.len() < target_container.1.max_doses
-                {
-                    // Transfer 1 dose (ingredient)
-                    if let Some(ingredient) = held_container.1.contents.pop() {
-                        target_container.1.contents.push(ingredient);
-                    }
+                if target_container.1.level < target_container.1.max_doses {
+                    // Add mixing here
                 }
             }
         }
     }
 }
 
-fn evaluate_mixture(contents: &[String], config: &RecipesConfig) -> String {
-    let mut unique = contents.to_vec();
-    unique.sort();
-    unique.dedup();
-
-    if unique.is_empty() {
-        return "Empty".to_string();
-    }
-
-    if unique.len() == 1 {
-        // Fallback for single raw ingredients to specific color bases
-        match unique[0].as_str() {
-            "Wine" => "Red".to_string(),
-            "Beer" => "Yellow".to_string(),
-            "Cider" => "Orange".to_string(),
-            "Brandy" => "Purple".to_string(),
-            "Unicorn Tear" => "Blue".to_string(),
-            "Mandrake Root" => "Green".to_string(),
-            _ => "Red".to_string(),
-        }
-    } else if unique.len() == 2 {
-        let mut pair = (unique[0].clone(), unique[1].clone());
-        if !config.recipes.contains_key(&pair) {
-            pair = (unique[1].clone(), unique[0].clone()); // try reverse
-        }
-
-        if let Some(result_id) = config.recipes.get(&pair) {
-            if let Some(result_type) = config.result_types.get(result_id) {
-                return result_type.texture.clone();
-            }
-        }
-        "Green".to_string() // Stagnant water fallback
-    } else {
-        "Green".to_string() // Too many ingredients -> stagnant water
-    }
-}
-
 fn update_liquid_visuals(
     recipes_assets: Option<Res<RecipesAssets>>,
     recipes_configs: Res<Assets<RecipesConfig>>,
-    mut container_query: Query<
-        (&LiquidContainer, &Children, Option<&mut AseAnimation>),
-        Changed<LiquidContainer>,
-    >,
+    mut container_query: Query<(&LiquidContainer, &mut AseAnimation), Changed<LiquidContainer>>,
     mut visual_query: Query<(
         &mut Transform,
         &mut MeshMaterial2d<ColorMaterial>,
@@ -121,39 +72,17 @@ fn update_liquid_visuals(
 ) {
     let recipes_config = recipes_assets.and_then(|ra| recipes_configs.get(&ra.recipes));
 
-    for (container, children, mut ase_anim) in container_query.iter_mut() {
-        let fill_ratio = container.contents.len() as f32 / container.max_doses as f32;
+    for (container, mut animation) in container_query.iter_mut() {
+        if let Some(config) = recipes_config
+            && let Some(content) = &container.content
+        {
+            let base_texture = config.beverages.get(content).unwrap().texture.clone();
+            let level = container.level.clamp(1, 4);
+            let tag_name = format!("{base_texture}{level}");
 
-        // 1. Update Aseprite Animation for Glass
-        if let Some(ref mut anim) = ase_anim {
-            if container.contents.is_empty() {
-                anim.animation = Animation::tag("Empty");
-            } else if let Some(config) = recipes_config {
-                let base_texture = evaluate_mixture(&container.contents, config);
-                let dose_num = container.contents.len().clamp(1, 4);
-                let tag_name = format!("{}{}", base_texture, dose_num);
-
-                anim.animation = Animation::tag(&tag_name);
-            }
-        }
-
-        // 2. Update Mesh2d for Bottles (or fallback glass visual)
-        for child in children.iter() {
-            if let Ok((mut transform, mut material_handle, visual)) = visual_query.get_mut(child) {
-                transform.scale.y = fill_ratio.max(0.001);
-
-                let base_y = -visual.container_height / 2.0;
-                let current_height = visual.container_height * fill_ratio;
-                transform.translation.y = base_y + (current_height / 2.0);
-
-                if !container.is_glass {
-                    // Bottles keep their raw base color
-                    material_handle.0 = materials.add(container.base_color);
-                } else {
-                    // If the glass still has a mesh visual, hide it entirely since we use Aseprite
-                    material_handle.0 = materials.add(Color::NONE);
-                }
-            }
+            animation.animation = Animation::tag(&tag_name);
+        } else if container.content.is_none() {
+            animation.animation = Animation::tag("Empty");
         }
     }
 }
