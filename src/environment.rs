@@ -1,16 +1,18 @@
 use crate::alchemy::{LiquidContainer, LiquidVisual};
 
 use crate::core::components::Scroll;
+use crate::core::states::GameState;
 use crate::interaction::Draggable;
 use avian2d::prelude::*;
 use bevy::prelude::*;
+use bevy::window::PrimaryWindow;
 use bevy_aseprite_ultra::prelude::*;
 
 pub struct EnvironmentPlugin;
 
 impl Plugin for EnvironmentPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, setup_environment);
+        app.add_systems(OnEnter(GameState::Playing), setup_environment);
     }
 }
 
@@ -19,10 +21,13 @@ fn setup_environment(
     asset_server: Res<AssetServer>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
+    window_query: Query<&Window, With<PrimaryWindow>>,
 ) {
     // ==========================================
     // === CUSTOMERS VIEW (X = 0.0) ===
     // ==========================================
+
+    let window = window_query.single().unwrap();
 
     // Background Tavern Image
     commands.spawn((
@@ -30,12 +35,11 @@ fn setup_environment(
             aseprite: asset_server.load("textures/background/front.ase"),
             animation: Animation::default(),
         },
-        Sprite::default(),
-        Transform {
-            translation: Vec3::new(0.0, 0.0, -10.0),
-            scale: Vec3::splat(2.0),
+        Sprite {
+            custom_size: Some(Vec2::new(window.width(), window.height())),
             ..default()
         },
+        Transform::from_xyz(0.0, 0.0, -10.0),
     ));
 
     commands.spawn((
@@ -46,8 +50,8 @@ fn setup_environment(
         },
         Sprite::default(),
         Transform {
-            translation: Vec3::new(-650.0, 220.0, -10.0),
-            scale: Vec3::splat(1.0),
+            translation: Vec3::new(-510.0, 190.0, -10.0),
+            scale: Vec3::splat(0.7),
             ..default()
         },
     ));
@@ -61,44 +65,43 @@ fn setup_environment(
 
     // Invisible Walls to prevent items from falling off-screen (Tavern)
     commands.spawn((
-        // Left wall
         Transform::from_translation(Vec3::new(-1000.0, 0.0, -1.0)),
         RigidBody::Static,
         Collider::rectangle(100.0, 2000.0),
     ));
     commands.spawn((
-        // Right wall
         Transform::from_translation(Vec3::new(1000.0, 0.0, -1.0)),
         RigidBody::Static,
         Collider::rectangle(100.0, 2000.0),
     ));
 
-    // A Glass on the counter
-    let bottle_entity = commands
+    // A Glass on the counter (Using cut_mug.ase)
+    let glass_entity = commands
         .spawn((
             AseAnimation {
-                aseprite: asset_server.load("textures/bottle/bottle_glouglou.aseprite"),
+                aseprite: asset_server.load("models/mug/cut_mug.ase"),
                 animation: Animation::default(),
             },
             Transform {
-                translation: Vec3::new(0.0, -150.0, 2.0),
-                scale: Vec3::splat(2.5),
+                translation: Vec3::new(0.0, 0.0, 2.0), // Rehaussé pour ne pas rentrer dans la table avec sa nouvelle taille
+                scale: Vec3::splat(3.0),               // Taille augmentée x3
                 ..default()
             },
             Sprite::default(),
             RigidBody::Dynamic,
             LockedAxes::ROTATION_LOCKED,
-            Collider::rectangle(100.0, 150.0),
+            Collider::rectangle(100.0, 150.0), // Avian2d mettra cette hitbox à l'échelle (x3) automatiquement
             Draggable,
             LiquidContainer {
-                doses: 0,
+                contents: vec![],
                 max_doses: 4,
-                color: Color::NONE,
+                base_color: Color::NONE,
                 is_glass: true,
             },
         ))
         .id();
 
+    // On garde un LiquidVisual si jamais, mais on le rend invisible (ou on l'enlève)
     let glass_liquid = commands
         .spawn((
             Mesh2d(meshes.add(Rectangle::new(80.0, 130.0))),
@@ -110,7 +113,7 @@ fn setup_environment(
             },
         ))
         .id();
-    commands.entity(bottle_entity).add_child(glass_liquid);
+    commands.entity(glass_entity).add_child(glass_liquid);
 
     // ==========================================
     // === ALCHEMY VIEW (X = 5000.0) ===
@@ -131,13 +134,11 @@ fn setup_environment(
 
     // Invisible Walls (Alchemy)
     commands.spawn((
-        // Left wall
         Transform::from_translation(Vec3::new(4000.0, 0.0, -1.0)),
         RigidBody::Static,
         Collider::rectangle(100.0, 2000.0),
     ));
     commands.spawn((
-        // Right wall
         Transform::from_translation(Vec3::new(6000.0, 0.0, -1.0)),
         RigidBody::Static,
         Collider::rectangle(100.0, 2000.0),
@@ -151,15 +152,15 @@ fn setup_environment(
                 custom_size: Some(Vec2::new(80.0, 180.0)),
                 ..default()
             },
-            Transform::from_translation(Vec3::new(4800.0, 100.0, 2.0)), // Bien espacées
+            Transform::from_translation(Vec3::new(4800.0, 100.0, 2.0)),
             RigidBody::Dynamic,
-            LockedAxes::ROTATION_LOCKED, // Empêche de basculer
+            LockedAxes::ROTATION_LOCKED,
             Collider::rectangle(80.0, 180.0),
             Draggable,
             LiquidContainer {
-                doses: 5,
+                contents: vec!["Wine".to_string(); 5],
                 max_doses: 5,
-                color: Color::srgb(0.9, 0.1, 0.1),
+                base_color: Color::srgb(0.9, 0.1, 0.1),
                 is_glass: false,
             },
         ))
@@ -192,9 +193,9 @@ fn setup_environment(
             Collider::rectangle(80.0, 180.0),
             Draggable,
             LiquidContainer {
-                doses: 5,
+                contents: vec!["Unicorn Tear".to_string(); 5],
                 max_doses: 5,
-                color: Color::srgb(0.1, 0.1, 0.9),
+                base_color: Color::srgb(0.1, 0.1, 0.9),
                 is_glass: false,
             },
         ))
@@ -227,9 +228,9 @@ fn setup_environment(
             Collider::rectangle(80.0, 180.0),
             Draggable,
             LiquidContainer {
-                doses: 5,
+                contents: vec!["Mandrake Root".to_string(); 5],
                 max_doses: 5,
-                color: Color::srgb(0.1, 0.9, 0.1),
+                base_color: Color::srgb(0.1, 0.9, 0.1),
                 is_glass: false,
             },
         ))
