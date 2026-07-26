@@ -8,7 +8,7 @@ use bevy_aseprite_ultra::prelude::{Animation, AseAnimation};
 use rand::seq::{IndexedRandom, IteratorRandom};
 use std::time::Duration;
 
-const WAIT_INDICATOR_RADIUS: f32 = 12.0;
+const WAIT_INDICATOR_RADIUS: f32 = 6.0;
 
 fn wait_indicator_offset(texture: &str) -> (f32, f32) {
     match texture {
