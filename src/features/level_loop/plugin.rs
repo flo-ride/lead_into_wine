@@ -25,8 +25,10 @@ impl Plugin for LevelLoopPlugin {
                     level_loop_system,
                     despawn_pnj,
                     spawn_pnj,
+                    animate_pnj_wait_indicator,
                     select_recipe,
                     write_customer_text,
+                    hide_wait_indicator_on_leaving,
                     pnj_departure_system,
                 )
                     .chain()
