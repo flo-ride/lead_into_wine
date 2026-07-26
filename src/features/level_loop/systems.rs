@@ -8,9 +8,18 @@ use bevy_aseprite_ultra::prelude::{Animation, AseAnimation};
 use rand::seq::{IndexedRandom, IteratorRandom};
 use std::time::Duration;
 
+const PNJ_ARRIVAL_COOLDOWN_SECS: f32 = 0.6;
+
+/// Marqueur temporaire : un PNJ "en attente" avant son apparition réelle.
+#[derive(Component)]
+pub struct PendingPnjSpawn {
+    pub index: usize,
+    pub timer: Timer,
+}
+
 fn get_day_config(assets: Res<Assets<PersonnaConfig>>, day: u32) -> CurrentLevel {
     let customer_count = 3 + (day as usize);
-    let customer_delay = 5u64.saturating_sub(day as u64 / 4).max(2) / 2;
+    let customer_delay = 5u64.saturating_sub(day as u64 / 4).max(2);
     let day_duration = Duration::from_secs(customer_delay * customer_count as u64 + 3);
 
     let config = assets
@@ -139,17 +148,36 @@ pub fn write_customer_text(
     }
 }
 
+pub fn queue_pnj_spawn(mut commands: Commands, mut arrived_events: MessageReader<CustomerArrived>) {
+    for event in arrived_events.read() {
+        commands.spawn(PendingPnjSpawn {
+            index: event.index,
+            timer: Timer::from_seconds(PNJ_ARRIVAL_COOLDOWN_SECS, TimerMode::Once),
+        });
+    }
+}
+
+/// Fait avancer le cooldown, et spawn réellement le PNJ une fois le délai écoulé.
 pub fn spawn_pnj(
     mut commands: Commands,
+    time: Res<Time>,
     game_assets: Res<AssetServer>,
     current_level: Res<CurrentLevel>,
     assets: Res<Assets<PersonnaConfig>>,
-    mut arrived_events: MessageReader<CustomerArrived>,
+    mut pending: Query<(Entity, &mut PendingPnjSpawn)>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
-    for event in arrived_events.read() {
-        let Some(current_pnj) = current_level.customer_list.get(event.index) else {
+    for (pending_entity, mut pending_spawn) in &mut pending {
+        pending_spawn.timer.tick(time.delta());
+
+        if !pending_spawn.timer.is_finished() {
+            continue;
+        }
+
+        commands.entity(pending_entity).despawn();
+
+        let Some(current_pnj) = current_level.customer_list.get(pending_spawn.index) else {
             continue;
         };
 
@@ -171,7 +199,7 @@ pub fn spawn_pnj(
                 Sprite::default(),
                 Transform {
                     translation: Vec3::new(100.0, -70.0, -5.0),
-                    scale: Vec3::splat(1.5),
+                    scale: Vec3::splat(2.5),
                     ..default()
                 },
                 Collider::rectangle(80.0, 180.0),
