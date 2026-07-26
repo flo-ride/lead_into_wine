@@ -22,6 +22,11 @@ pub struct PnjWaitIndicator {
     pub timer: Timer,
 }
 
+#[derive(Component)]
+pub struct PnjWaitText {
+    pub timer: Timer,
+}
+
 /// Marque une entité comme étant un pnj client actuellement en jeu.
 #[derive(Component)]
 pub struct Pnj;

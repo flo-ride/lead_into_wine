@@ -81,8 +81,9 @@ pub fn start_scroll_exiting(
     mut commands: Commands,
     mut day_ended_events: MessageReader<DayEnded>,
     scroll_query: Query<(Entity, &Transform), With<Scroll>>,
+
 ) {
-    if day_ended_events.read().next().is_none() {
+    if day_ended_events.read().next().is_none() && leaving_pnj.iter().next().is_none() {
         return;
     }
 
